@@ -2,29 +2,24 @@ import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-import 'register_pages.dart';
-import '../main_screen.dart';
 
-class LoginPage extends StatefulWidget {
-  final VoidCallback onLoggedIn;
-  const LoginPage({super.key, required this.onLoggedIn});
+class RegisterPage extends StatefulWidget {
+  const RegisterPage({super.key});
 
   @override
-  State<LoginPage> createState() => _LoginPageState();
+  State<RegisterPage> createState() => _RegisterPageState();
 }
 
-class _LoginPageState extends State<LoginPage> {
+class _RegisterPageState extends State<RegisterPage> {
   final emailCtrl = TextEditingController();
   final passCtrl = TextEditingController();
   bool loading = false;
   bool showPassword = false;
   String? error;
 
-  // For Android emulator use 10.0.2.2, for iOS simulator 127.0.0.1,
-  // for real device use your PC LAN IP (e.g., http://192.168.1.100:5000)
   static const String apiBase = 'http://10.0.2.2:5000';
 
-  Future<void> _login() async {
+  Future<void> _register() async {
     if (loading) return;
     setState(() {
       loading = true;
@@ -36,21 +31,21 @@ class _LoginPageState extends State<LoginPage> {
 
     try {
       final res = await http.post(
-        Uri.parse('$apiBase/auth/login'),
+        Uri.parse('$apiBase/auth/register'),
         headers: const {"Content-Type": "application/json"},
         body: jsonEncode({"email": email, "password": password}),
       );
 
       if (res.statusCode == 200) {
-        // try parse token
-        final data = _safeJson(res.body);
-        if (kDebugMode) {
-          debugPrint('Login OK: ${data['token']}');
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Registration successful!')),
+          );
+          Navigator.pop(context);
         }
-        widget.onLoggedIn();
       } else {
-        final data = _safeJson(res.body);
-        setState(() => error = data['msg']?.toString() ?? 'Login failed (${res.statusCode})');
+        final data = jsonDecode(res.body);
+        setState(() => error = data['msg'] ?? 'Registration failed');
       }
     } catch (e) {
       setState(() => error = 'Connection error: $e');
@@ -59,27 +54,10 @@ class _LoginPageState extends State<LoginPage> {
     }
   }
 
-  Map<String, dynamic> _safeJson(String body) {
-    try {
-      final obj = jsonDecode(body);
-      return (obj is Map<String, dynamic>) ? obj : <String, dynamic>{'raw': obj};
-    } catch (_) {
-      return {'msg': body}; // backend might have sent plain text
-    }
-  }
-
   @override
-Widget build(BuildContext context) {
-  return WillPopScope(
-    onWillPop: () async {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (_) => const MainScreen()),
-      );
-      return false; // prevent default back pop
-    },
-    child: Scaffold(
-      appBar: AppBar(title: const Text('Login')),
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: const Text('Register')),
       body: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -87,19 +65,12 @@ Widget build(BuildContext context) {
             TextField(
               controller: emailCtrl,
               keyboardType: TextInputType.emailAddress,
-              autocorrect: false,
-              enableSuggestions: false,
-              textInputAction: TextInputAction.next,
               decoration: const InputDecoration(labelText: 'Email'),
             ),
             const SizedBox(height: 12),
             TextField(
               controller: passCtrl,
               obscureText: !showPassword,
-              autocorrect: false,
-              enableSuggestions: false,
-              textInputAction: TextInputAction.done,
-              onSubmitted: (_) => _login(),
               decoration: InputDecoration(
                 labelText: 'Password',
                 suffixIcon: IconButton(
@@ -117,23 +88,12 @@ Widget build(BuildContext context) {
             loading
                 ? const CircularProgressIndicator()
                 : ElevatedButton(
-                    onPressed: _login,
-                    child: const Text('Login'),
+                    onPressed: _register,
+                    child: const Text('Register'),
                   ),
-            const SizedBox(height: 12),
-            ElevatedButton(
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (_) => const RegisterPage()),
-                );
-              },
-              child: const Text('Create Account'),
-            ),
           ],
         ),
       ),
-    ),
-  );
-}
+    );
+  }
 }
