@@ -1,34 +1,68 @@
-import bcrypt from "bcryptjs";
-import jwt from "jsonwebtoken";
-import User from "../models/User.js";
+import { db } from '../config/firebase-config.js';
+import dotenv from 'dotenv';
+
+
+dotenv.config();
 
 export const registerUser = async (req, res) => {
   try {
     const { email, password } = req.body;
-    const exists = await User.findOne({ email });
-    if (exists) return res.status(400).json({ msg: "User already exists" });
 
-    const hashed = await bcrypt.hash(password, 10);
-    const user = await User.create({ email, password: hashed });
+    const response = await fetch(
+      `https://identitytoolkit.googleapis.com/v1/accounts:signUp?key=${process.env.FIREBASE_API_KEY}`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email,
+          password,
+          returnSecureToken: true,
+        }),
+      }
+    );
 
-    res.json({ msg: "User registered", id: user._id });
+    const user = await response.json();
+
+    if (!response.ok) {
+      return res.status(400).json({ msg: user.error?.message || 'Register failed' });
+    }
+
+    await db.collection('users').doc(user.localId).set({
+      email,
+      createdAt: new Date(),
+    });
+
+    // ✅ THIS LINE IS IMPORTANT:
+    return res.status(200).json({ msg: 'User registered', id: user.localId });
+
   } catch (err) {
-    res.status(500).json({ msg: err.message });
+    return res.status(500).json({ msg: err.message });
   }
 };
+
 
 export const loginUser = async (req, res) => {
   try {
     const { email, password } = req.body;
-    const user = await User.findOne({ email });
-    if (!user) return res.status(400).json({ msg: "User not found" });
 
-    const match = await bcrypt.compare(password, user.password);
-    if (!match) return res.status(400).json({ msg: "Invalid password" });
+    const response = await fetch(
+      `https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=${process.env.FIREBASE_API_KEY}`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password, returnSecureToken: true }),
+      }
+    );
 
-    const token = jwt.sign({ id: user._id }, "SECRET_KEY", { expiresIn: "1h" });
-    res.json({ msg: "Login successful", token });
+    const data = await response.json();
+
+    if (!response.ok) {
+      return res.status(response.status).json({ msg: data.error?.message || 'LOGIN_FAILED' });
+    }
+
+    return res.json({ msg: 'Login successful', token: data.idToken });
   } catch (err) {
-    res.status(500).json({ msg: err.message });
+    return res.status(500).json({ msg: err.message });
   }
 };
+console.log('Firebase key:', process.env.FIREBASE_API_KEY);

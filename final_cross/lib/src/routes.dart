@@ -1,34 +1,21 @@
 import 'package:flutter/material.dart';
 import 'data/repositories/course_repository.dart';
-import 'features/auth/login_pages.dart';
-import 'features/course/course_list_page.dart';
-import 'features/course/course_detail_page.dart';
-
-class AppRoutes {
-  static const login = '/login';
-  static const courses = '/courses';
-  static const courseDetail = '/courses/detail';
-}
+import 'features/auth/routes.dart';
+import 'features/course/routes.dart';
 
 Route<dynamic> buildRoute(RouteSettings settings, CourseRepository repo) {
-  switch (settings.name) {
-    case AppRoutes.login:
-      return MaterialPageRoute(builder: (context) => LoginPage(onLoggedIn: () {
-        Navigator.pushReplacementNamed(context, AppRoutes.courses);
-      }));
+  // Try matching route from auth feature
+  final authRoute = AuthRoutes.build(settings);
+  if (authRoute != null) return authRoute;
 
-    case AppRoutes.courses:
-      return MaterialPageRoute(builder: (_) => CourseListPage(repo: repo));
+  // Try matching route from course feature
+  final courseRoute = CourseRoutes.build(settings, repo);
+  if (courseRoute != null) return courseRoute;
 
-    case AppRoutes.courseDetail:
-      final args = settings.arguments as CourseDetailArgs;
-      return MaterialPageRoute(
-        builder: (_) => CourseDetailPage(course: args.course),
-      );
-
-    default:
-      return MaterialPageRoute(
-        builder: (_) => const Scaffold(body: Center(child: Text('404'))),
-      );
-  }
+  // Fallback: 404 route
+  return MaterialPageRoute(
+    builder: (_) => const Scaffold(
+      body: Center(child: Text('404: Page Not Found')),
+    ),
+  );
 }

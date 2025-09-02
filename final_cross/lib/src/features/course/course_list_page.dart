@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:final_cross/src/features/course/routes.dart'; // ✅ For route constants
 import '../../constants/app_strings.dart';
 import '../../constants/app_sizes.dart';
-import '../../data/repositories/course_repository.dart'; // Fixed import
-import '../../routes.dart';
+import '../../data/repositories/course_repository.dart';
 import '../../data/models/course.dart';
-import 'course_detail_page.dart';
+import 'course_detail_page.dart'; // You can keep this for CourseDetailArgs
 
 class CourseListPage extends StatelessWidget {
   final CourseRepository repo;
@@ -23,6 +23,7 @@ class CourseListPage extends StatelessWidget {
           if (snap.hasError) {
             return Center(child: Text('Error: ${snap.error}'));
           }
+
           final courses = snap.data ?? [];
           if (courses.isEmpty) {
             return const Center(child: Text('No courses yet'));
@@ -41,7 +42,7 @@ class CourseListPage extends StatelessWidget {
                 trailing: const Icon(Icons.arrow_forward_ios, size: 16),
                 onTap: () => Navigator.pushNamed(
                   context,
-                  AppRoutes.courseDetail,
+                  CourseRoutes.courseDetail,
                   arguments: CourseDetailArgs(course: c),
                 ),
               );

@@ -20,9 +20,7 @@ class _LoginPageState extends State<LoginPage> {
   bool showPassword = false;
   String? error;
 
-  // For Android emulator use 10.0.2.2, for iOS simulator 127.0.0.1,
-  // for real device use your PC LAN IP (e.g., http://192.168.1.100:5000)
-  static const String apiBase = 'http://10.0.2.2:5000';
+  static const String apiBase = 'http://10.0.2.2:5000'; // or use dotenv for flexibility
 
   Future<void> _login() async {
     if (loading) return;
@@ -41,16 +39,19 @@ class _LoginPageState extends State<LoginPage> {
         body: jsonEncode({"email": email, "password": password}),
       );
 
+      final data = _safeJson(res.body);
+
       if (res.statusCode == 200) {
-        // try parse token
-        final data = _safeJson(res.body);
         if (kDebugMode) {
-          debugPrint('Login OK: ${data['token']}');
+          debugPrint('Login successful: ${data['token']}');
         }
-        widget.onLoggedIn();
+        widget.onLoggedIn(); // tell the parent (MainScreen) we're logged in
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (_) => const MainScreen()),
+        );
       } else {
-        final data = _safeJson(res.body);
-        setState(() => error = data['msg']?.toString() ?? 'Login failed (${res.statusCode})');
+        setState(() => error = data['msg']?.toString() ?? 'Login failed');
       }
     } catch (e) {
       setState(() => error = 'Connection error: $e');
@@ -62,78 +63,80 @@ class _LoginPageState extends State<LoginPage> {
   Map<String, dynamic> _safeJson(String body) {
     try {
       final obj = jsonDecode(body);
-      return (obj is Map<String, dynamic>) ? obj : <String, dynamic>{'raw': obj};
+      return obj is Map<String, dynamic> ? obj : {'raw': obj};
     } catch (_) {
-      return {'msg': body}; // backend might have sent plain text
+      return {'msg': body};
     }
   }
 
   @override
-Widget build(BuildContext context) {
-  return WillPopScope(
-    onWillPop: () async {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (_) => const MainScreen()),
-      );
-      return false; // prevent default back pop
-    },
-    child: Scaffold(
-      appBar: AppBar(title: const Text('Login')),
-      body: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          children: [
-            TextField(
-              controller: emailCtrl,
-              keyboardType: TextInputType.emailAddress,
-              autocorrect: false,
-              enableSuggestions: false,
-              textInputAction: TextInputAction.next,
-              decoration: const InputDecoration(labelText: 'Email'),
-            ),
-            const SizedBox(height: 12),
-            TextField(
-              controller: passCtrl,
-              obscureText: !showPassword,
-              autocorrect: false,
-              enableSuggestions: false,
-              textInputAction: TextInputAction.done,
-              onSubmitted: (_) => _login(),
-              decoration: InputDecoration(
-                labelText: 'Password',
-                suffixIcon: IconButton(
-                  onPressed: () => setState(() => showPassword = !showPassword),
-                  icon: Icon(showPassword ? Icons.visibility_off : Icons.visibility),
+  Widget build(BuildContext context) {
+    return WillPopScope(
+      onWillPop: () async {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (_) => const MainScreen()),
+        );
+        return false;
+      },
+      child: Scaffold(
+        appBar: AppBar(title: const Text('Login')),
+        body: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            children: [
+              TextField(
+                controller: emailCtrl,
+                keyboardType: TextInputType.emailAddress,
+                autocorrect: false,
+                enableSuggestions: false,
+                textInputAction: TextInputAction.next,
+                decoration: const InputDecoration(labelText: 'Email'),
+              ),
+              const SizedBox(height: 12),
+              TextField(
+                controller: passCtrl,
+                obscureText: !showPassword,
+                autocorrect: false,
+                enableSuggestions: false,
+                textInputAction: TextInputAction.done,
+                onSubmitted: (_) => _login(),
+                decoration: InputDecoration(
+                  labelText: 'Password',
+                  suffixIcon: IconButton(
+                    onPressed: () => setState(() => showPassword = !showPassword),
+                    icon: Icon(
+                      showPassword ? Icons.visibility_off : Icons.visibility,
+                    ),
+                  ),
                 ),
               ),
-            ),
-            const SizedBox(height: 20),
-            if (error != null)
-              Padding(
-                padding: const EdgeInsets.only(bottom: 8),
-                child: Text(error!, style: const TextStyle(color: Colors.red)),
+              const SizedBox(height: 20),
+              if (error != null)
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 8),
+                  child: Text(error!, style: const TextStyle(color: Colors.red)),
+                ),
+              loading
+                  ? const CircularProgressIndicator()
+                  : ElevatedButton(
+                      onPressed: _login,
+                      child: const Text('Login'),
+                    ),
+              const SizedBox(height: 12),
+              ElevatedButton(
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => const RegisterPage()),
+                  );
+                },
+                child: const Text('Create Account'),
               ),
-            loading
-                ? const CircularProgressIndicator()
-                : ElevatedButton(
-                    onPressed: _login,
-                    child: const Text('Login'),
-                  ),
-            const SizedBox(height: 12),
-            ElevatedButton(
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (_) => const RegisterPage()),
-                );
-              },
-              child: const Text('Create Account'),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
-    ),
-  );
-}
+    );
+  }
 }
