@@ -1,0 +1,195 @@
+{
+  "categories": [
+    {
+      "id": "backend-development",
+      "data": {
+        "name": "Backend Development",
+        "description": "Server-side and cloud development",
+        "icon": "server",
+        "coursesCount": 1,
+        "createdAt": {
+          "_seconds": 1756963363,
+          "_nanoseconds": 373000000
+        }
+      }
+    },
+    {
+      "id": "mobile-development",
+      "data": {
+        "name": "Mobile Development",
+        "description": "Mobile app development courses",
+        "icon": "mobile",
+        "coursesCount": 2,
+        "createdAt": {
+          "_seconds": 1756963363,
+          "_nanoseconds": 373000000
+        }
+      }
+    }
+  ],
+  "courses": [
+    {
+      "id": "firebase-integration-002",
+      "data": {
+        "title": "Firebase Backend Services",
+        "description": "Learn to integrate Firebase services in mobile applications",
+        "instructor": "Backend Expert",
+        "duration": 150,
+        "difficulty": "Intermediate",
+        "thumbnail": "https://example.com/firebase-course.jpg",
+        "price": 149.99,
+        "rating": 4.8,
+        "studentsCount": 0,
+        "createdAt": {
+          "_seconds": 1756963363,
+          "_nanoseconds": 373000000
+        },
+        "updatedAt": {
+          "_seconds": 1756963363,
+          "_nanoseconds": 373000000
+        },
+        "isPublished": true,
+        "category": "Backend Development",
+        "lessons": [
+          {
+            "id": "lesson-001",
+            "title": "Firebase Setup and Configuration",
+            "description": "Setting up Firebase project and SDK",
+            "duration": 25,
+            "videoUrl": "https://example.com/firebase-setup.mp4",
+            "order": 1
+          },
+          {
+            "id": "lesson-002",
+            "title": "Authentication Implementation",
+            "description": "Implementing user authentication with Firebase",
+            "duration": 40,
+            "videoUrl": "https://example.com/firebase-auth.mp4",
+            "order": 2
+          },
+          {
+            "id": "lesson-003",
+            "title": "Firestore Database",
+            "description": "Working with Firestore NoSQL database",
+            "duration": 35,
+            "videoUrl": "https://example.com/firestore.mp4",
+            "order": 3
+          }
+        ]
+      }
+    },
+    {
+      "id": "flutter-basics-001",
+      "data": {
+        "title": "Flutter Development Fundamentals",
+        "description": "Complete guide to building mobile apps with Flutter framework",
+        "instructor": "Tech Instructor",
+        "duration": 180,
+        "difficulty": "Beginner",
+        "thumbnail": "https://example.com/flutter-course.jpg",
+        "price": 99.99,
+        "rating": 4.5,
+        "studentsCount": 0,
+        "createdAt": {
+          "_seconds": 1756963363,
+          "_nanoseconds": 373000000
+        },
+        "updatedAt": {
+          "_seconds": 1756963363,
+          "_nanoseconds": 373000000
+        },
+        "isPublished": true,
+        "category": "Mobile Development",
+        "lessons": [
+          {
+            "id": "lesson-001",
+            "title": "Introduction to Flutter",
+            "description": "Getting started with Flutter development",
+            "duration": 30,
+            "videoUrl": "https://example.com/flutter-intro.mp4",
+            "order": 1
+          },
+          {
+            "id": "lesson-002",
+            "title": "Widgets and UI Components",
+            "description": "Building user interfaces with Flutter widgets",
+            "duration": 45,
+            "videoUrl": "https://example.com/flutter-widgets.mp4",
+            "order": 2
+          },
+          {
+            "id": "lesson-003",
+            "title": "State Management",
+            "description": "Managing app state in Flutter applications",
+            "duration": 60,
+            "videoUrl": "https://example.com/flutter-state.mp4",
+            "order": 3
+          }
+        ]
+      }
+    },
+    {
+      "id": "react-native-003",
+      "data": {
+        "title": "React Native Cross-Platform Development",
+        "description": "Build iOS and Android apps with React Native",
+        "instructor": "Mobile Expert",
+        "duration": 200,
+        "difficulty": "Intermediate",
+        "thumbnail": "https://example.com/react-native-course.jpg",
+        "price": 179.99,
+        "rating": 4.6,
+        "studentsCount": 0,
+        "createdAt": {
+          "_seconds": 1756963363,
+          "_nanoseconds": 373000000
+        },
+        "updatedAt": {
+          "_seconds": 1756963363,
+          "_nanoseconds": 373000000
+        },
+        "isPublished": true,
+        "category": "Mobile Development",
+        "lessons": [
+          {
+            "id": "lesson-001",
+            "title": "React Native Fundamentals",
+            "description": "Core concepts of React Native development",
+            "duration": 45,
+            "videoUrl": "https://example.com/rn-fundamentals.mp4",
+            "order": 1
+          },
+          {
+            "id": "lesson-002",
+            "title": "Navigation and Routing",
+            "description": "Implementing navigation in React Native apps",
+            "duration": 35,
+            "videoUrl": "https://example.com/rn-navigation.mp4",
+            "order": 2
+          }
+        ]
+      }
+    }
+  ],
+  "enrollments": [
+    {
+      "id": "enrollment-sample-001",
+      "data": {
+        "userId": "sample-user-1",
+        "courseId": "flutter-basics-001",
+        "enrolledAt": {
+          "_seconds": 1756962840,
+          "_nanoseconds": 42000000
+        },
+        "progress": 0,
+        "completedLessons": [],
+        "status": "active",
+        "lastAccessed": {
+          "_seconds": 1756962840,
+          "_nanoseconds": 42000000
+        },
+        "completionDate": null
+      }
+    }
+  ]
+}

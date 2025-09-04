@@ -3,7 +3,8 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'register_pages.dart';
-import '../main_screen.dart';
+import '../course/course_list_page.dart';
+import '../../data/repositories/course_repository.dart';
 
 class LoginPage extends StatefulWidget {
   final VoidCallback onLoggedIn;
@@ -45,10 +46,21 @@ class _LoginPageState extends State<LoginPage> {
         if (kDebugMode) {
           debugPrint('Login successful: ${data['token']}');
         }
-        widget.onLoggedIn(); // tell the parent (MainScreen) we're logged in
+        
+        // Store the token if needed for API calls
+        // You might want to save this token using shared_preferences
+        final token = data['token'];
+        
+        widget.onLoggedIn(); // tell the parent we're logged in
+        
+        // Navigate to course list page
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (_) => const MainScreen()),
+          MaterialPageRoute(
+            builder: (_) => CourseListPage(
+              repo: CourseRepository(), // Initialize your course repository
+            ),
+          ),
         );
       } else {
         setState(() => error = data['msg']?.toString() ?? 'Login failed');
@@ -73,11 +85,8 @@ class _LoginPageState extends State<LoginPage> {
   Widget build(BuildContext context) {
     return WillPopScope(
       onWillPop: () async {
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (_) => const MainScreen()),
-        );
-        return false;
+        // Handle back button - maybe go to main screen or exit app
+        return true;
       },
       child: Scaffold(
         appBar: AppBar(title: const Text('Login')),

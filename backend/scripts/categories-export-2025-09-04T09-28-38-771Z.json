@@ -1,0 +1,24 @@
+[
+  {
+    "id": "backend-development",
+    "name": "Backend Development",
+    "description": "Server-side and cloud development",
+    "icon": "server",
+    "coursesCount": 1,
+    "createdAt": {
+      "_seconds": 1756963363,
+      "_nanoseconds": 373000000
+    }
+  },
+  {
+    "id": "mobile-development",
+    "name": "Mobile Development",
+    "description": "Mobile app development courses",
+    "icon": "mobile",
+    "coursesCount": 2,
+    "createdAt": {
+      "_seconds": 1756963363,
+      "_nanoseconds": 373000000
+    }
+  }
+]
