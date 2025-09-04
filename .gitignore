@@ -1,91 +1,67 @@
-# Ignore all node_modules folders
-node_modules/
-**/node_modules/
-
-# Environment files
+# Environment & Secrets
 .env
-.env.local
-.env.*.local
-**/.env
-**/.env.local
+.env.*
+*.key
+**/firebase-service-account.json
+**/google-services.json
+**/GoogleService-Info.plist
 
-# Logs
-*.log
+# Node.js
+node_modules/
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+package-lock.json
 
-# Flutter/Dart build and generated files
-final_cross/build/
-final_cross/.dart_tool/
-final_cross/.flutter-plugins
-final_cross/.flutter-plugins-dependencies
-final_cross/.packages
-final_cross/.idea/
-final_cross/.vscode/
-final_cross/ios/Flutter/App.framework
-final_cross/ios/Flutter/Flutter.framework
-final_cross/ios/Flutter/Flutter.podspec
-final_cross/ios/Flutter/Generated.xcconfig
-final_cross/ios/Flutter/ephemeral/
-final_cross/android/.gradle/
-final_cross/android/app/build/
-final_cross/android/build/
-final_cross/web/.dart_tool/
-final_cross/web/build/
+# Flutter/Dart - Large build files
+**/build/
+**/.dart_tool/
+**/.flutter-plugins
+**/.flutter-plugins-dependencies
+**/.packages
 .pub-cache/
 .pub/
-/build/
-pubspec.lock
+**/pubspec.lock
 
-# IDE
-.idea/
-.vscode/
-*.swp
-*.swo
-*~
+# Android - Large build files
+**/android/build/
+**/android/.gradle/
+**/android/.kotlin/
+**/android/app/build/
+**/android/local.properties
 
-# OS
-.DS_Store
-.DS_Store?
-._*
-.Spotlight-V100
-.Trashes
-ehthumbs.db
-Thumbs.db
-
-# Android
-*.keystore
-!debug.keystore
-.gradle/
-/android/app/debug
-/android/app/profile
-/android/app/release
-
-# iOS
-*.pbxuser
-*.mode1v3
-*.mode2v3
-*.perspectivev3
-*.xcuserstate
-project.xcworkspace/
-xcuserdata/
-DerivedData/
-*.moved-aside
-*.hmap
-*.ipa
-*.xcarchive
+# iOS - Large build files
+**/ios/build/
+**/ios/Pods/
+**/ios/.symlinks/
+**/ios/Flutter/App.framework
+**/ios/Flutter/Flutter.framework
 
 # Firebase
-google-services.json
-GoogleService-Info.plist
 firebase-debug.log
 .firebase/
+**/crashlytics-build.properties
 
-# Misc
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Large cache/temp files
+**/.transforms/
+**/intermediates/
+**/tmp/
+**/.cxx/
+**/reports/
 coverage/
-lib/generated_plugin_registrant.dart
-*.tmp
-*.temp
+**/*.cache.dill.track.dill
 
 
