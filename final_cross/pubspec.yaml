@@ -24,9 +24,12 @@ dependencies:
   shared_preferences: ^2.2.3
   connectivity_plus: ^6.0.3
   url_launcher: ^6.3.1
-  firebase_core: ^2.27.0
-  firebase_auth: ^4.16.0
-  cloud_firestore: ^4.14.0
+  
+  # Fixed Firebase versions for compatibility
+  firebase_core: ^2.24.2
+  firebase_auth: ^4.15.3
+  cloud_firestore: ^4.13.6
+  
   flutter_dotenv: ^5.1.0
 
 dev_dependencies:
