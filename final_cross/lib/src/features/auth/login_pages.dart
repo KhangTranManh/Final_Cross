@@ -21,7 +21,14 @@ class _LoginPageState extends State<LoginPage> {
   bool showPassword = false;
   String? error;
 
-  static const String apiBase = 'http://10.0.2.2:5000'; // or use dotenv for flexibility
+  // Dynamic API base URL based on platform
+  static String get apiBase {
+    if (kIsWeb) {
+      return 'http://localhost:5000'; // Web uses localhost
+    } else {
+      return 'http://10.0.2.2:5000'; // Android emulator uses 10.0.2.2
+    }
+  }
 
   Future<void> _login() async {
     if (loading) return;
@@ -30,54 +37,38 @@ class _LoginPageState extends State<LoginPage> {
       error = null;
     });
 
-    final email = emailCtrl.text.trim();
-    final password = passCtrl.text.trim();
-
     try {
-      final res = await http.post(
+      final response = await http.post(
         Uri.parse('$apiBase/auth/login'),
-        headers: const {"Content-Type": "application/json"},
-        body: jsonEncode({"email": email, "password": password}),
+        headers: {'Content-Type': 'application/json'},
+        body: json.encode({
+          'email': emailCtrl.text.trim(),
+          'password': passCtrl.text,
+        }),
       );
 
-      final data = _safeJson(res.body);
-
-      if (res.statusCode == 200) {
-        if (kDebugMode) {
-          debugPrint('Login successful: ${data['token']}');
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        if (data['success']) {
+          widget.onLoggedIn();
+        } else {
+          setState(() {
+            error = data['message'] ?? 'Login failed';
+          });
         }
-        
-        // Store the token if needed for API calls
-        // You might want to save this token using shared_preferences
-        final token = data['token'];
-        
-        widget.onLoggedIn(); // tell the parent we're logged in
-        
-        // Navigate to course list page
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(
-            builder: (_) => CourseListPage(
-              repo: CourseRepository(), // Initialize your course repository
-            ),
-          ),
-        );
       } else {
-        setState(() => error = data['msg']?.toString() ?? 'Login failed');
+        setState(() {
+          error = 'Login failed. Please try again.';
+        });
       }
     } catch (e) {
-      setState(() => error = 'Connection error: $e');
+      setState(() {
+        error = 'Network error. Please check your connection.';
+      });
     } finally {
-      if (mounted) setState(() => loading = false);
-    }
-  }
-
-  Map<String, dynamic> _safeJson(String body) {
-    try {
-      final obj = jsonDecode(body);
-      return obj is Map<String, dynamic> ? obj : {'raw': obj};
-    } catch (_) {
-      return {'msg': body};
+      setState(() {
+        loading = false;
+      });
     }
   }
 

@@ -28,9 +28,11 @@ dependencies:
   # Fixed Firebase versions for compatibility
   firebase_core: ^2.24.2
   firebase_auth: ^4.15.3
-  cloud_firestore: ^4.13.6
   
   flutter_dotenv: ^5.1.0
+
+dependency_overrides:
+  firebase_auth_web: ^5.12.0
 
 dev_dependencies:
   flutter_test:
