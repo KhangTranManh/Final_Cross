@@ -4,8 +4,9 @@ import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
 import 'src/features/main_screen.dart';
 import 'src/features/course/routes.dart';
-import 'src/data/repositories/course_repository.dart'; // Add this import
-import 'src/features/auth/routes.dart'; // Add this import
+import 'src/data/repositories/course_repository.dart';
+import 'src/features/auth/routes.dart';
+import 'src/features/auth/login_pages.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -27,7 +28,7 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
       ),
-      initialRoute: '/login', // Add this line
+      initialRoute: '/login',
       onGenerateRoute: (settings) {
         // Create repository instance
         final courseRepo = CourseRepository();
@@ -47,41 +48,12 @@ class MyApp extends StatelessWidget {
         // Default fallback
         return MaterialPageRoute(
           builder: (_) => Scaffold(
+            appBar: AppBar(title: const Text('Not Found')),
             body: Center(
               child: Text('Route not found: ${settings.name}'),
             ),
           ),
         );
-      },
-      home: const AppLauncher(), // changed to a loader-aware widget
-    );
-  }
-}
-
-// Optional wrapper for loading Firebase asynchronously
-class AppLauncher extends StatelessWidget {
-  const AppLauncher({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return FutureBuilder(
-      future: Firebase.initializeApp(
-        options: DefaultFirebaseOptions.currentPlatform,
-      ),
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.done) {
-          return const MainScreen(); // your actual home page
-        } else if (snapshot.hasError) {
-          return Scaffold(
-            body: Center(
-              child: Text('Firebase Error: ${snapshot.error}'),
-            ),
-          );
-        } else {
-          return const Scaffold(
-            body: Center(child: CircularProgressIndicator()),
-          );
-        }
       },
     );
   }

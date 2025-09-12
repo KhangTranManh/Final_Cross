@@ -2,11 +2,6 @@ import 'package:flutter/material.dart';
 import '../../data/models/course.dart';
 import '../../data/repositories/course_repository.dart';
 
-class CourseDetailArgs {
-  final Course course;
-  CourseDetailArgs({required this.course});
-}
-
 class CourseDetailPage extends StatefulWidget {
   final Course course;
   const CourseDetailPage({super.key, required this.course});

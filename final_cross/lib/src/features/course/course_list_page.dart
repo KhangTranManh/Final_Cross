@@ -5,15 +5,38 @@ import '../../constants/app_sizes.dart';
 import '../../data/repositories/course_repository.dart';
 import '../../data/models/course.dart';
 import 'course_detail_page.dart'; // You can keep this for CourseDetailArgs
+import '../auth/user_menu.dart';
 
-class CourseListPage extends StatelessWidget {
-  final CourseRepository repo;
-  const CourseListPage({super.key, required this.repo});
+class CourseListPage extends StatefulWidget {
+  const CourseListPage({super.key});
+
+  @override
+  State<CourseListPage> createState() => _CourseListPageState();
+}
+
+class _CourseListPageState extends State<CourseListPage> {
+  final CourseRepository repo = CourseRepository(); // Initialize your repository here
+
+  void _handleLogout() {
+    // Clear any local state if needed
+    setState(() {
+      // Reset any user-specific data
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text(AppStrings.courses)),
+      appBar: AppBar(
+        title: const Text('Courses'),
+        automaticallyImplyLeading: false, // Remove back button
+        actions: [
+          UserMenu(
+            onLogout: _handleLogout,
+          ),
+          const SizedBox(width: 8),
+        ],
+      ),
       body: FutureBuilder<List<Course>>(
         future: repo.getCourses(),
         builder: (context, snap) {
