@@ -25,33 +25,41 @@ export const verifyToken = async (req, res, next) => {
 export const getUserProfile = async (req, res) => {
   try {
     const { uid } = req.user;
+    const db = getFirestore();
     
     // Get user from Firestore
-    let user = await User.findByUid(uid);
+    const userDoc = await db.collection('users').doc(uid).get();
     
     // If user doesn't exist in Firestore, create from Firebase Auth
-    if (!user) {
+    if (!userDoc.exists) {
       const firebaseUser = await admin.auth().getUser(uid);
-      user = new User({
+      const userData = {
         uid: firebaseUser.uid,
         email: firebaseUser.email,
-        displayName: firebaseUser.displayName,
-        photoURL: firebaseUser.photoURL,
+        displayName: firebaseUser.displayName || null,
+        photoURL: firebaseUser.photoURL || null,
         emailVerified: firebaseUser.emailVerified,
         createdAt: new Date(firebaseUser.metadata.creationTime),
+      };
+      
+      await db.collection('users').doc(uid).set(userData);
+      
+      return res.json({
+        success: true,
+        user: userData
       });
-      await user.save();
     }
     
+    const userData = userDoc.data();
     res.json({
       success: true,
       user: {
-        uid: user.uid,
-        email: user.email,
-        displayName: user.displayName,
-        photoURL: user.photoURL,
-        emailVerified: user.emailVerified,
-        createdAt: user.createdAt,
+        uid: userData.uid,
+        email: userData.email,
+        displayName: userData.displayName,
+        photoURL: userData.photoURL,
+        emailVerified: userData.emailVerified,
+        createdAt: userData.createdAt,
       }
     });
   } catch (error) {
@@ -65,29 +73,37 @@ export const updateUserProfile = async (req, res) => {
   try {
     const { uid } = req.user;
     const updates = req.body;
+    const db = getFirestore();
     
     // Remove sensitive fields
     delete updates.uid;
     delete updates.email;
     delete updates.emailVerified;
     
-    let user = await User.findByUid(uid);
+    const userRef = db.collection('users').doc(uid);
+    const userDoc = await userRef.get();
     
-    if (!user) {
+    if (!userDoc.exists) {
       return res.status(404).json({ error: 'User not found' });
     }
     
-    await user.update(updates);
+    await userRef.update({
+      ...updates,
+      updatedAt: new Date()
+    });
+    
+    const updatedUser = await userRef.get();
+    const userData = updatedUser.data();
     
     res.json({
       success: true,
       message: 'Profile updated successfully',
       user: {
-        uid: user.uid,
-        email: user.email,
-        displayName: user.displayName,
-        photoURL: user.photoURL,
-        emailVerified: user.emailVerified,
+        uid: userData.uid,
+        email: userData.email,
+        displayName: userData.displayName,
+        photoURL: userData.photoURL,
+        emailVerified: userData.emailVerified,
       }
     });
   } catch (error) {
@@ -101,13 +117,19 @@ export const setCustomClaims = async (req, res) => {
   try {
     const { uid } = req.params;
     const { claims } = req.body;
+    const db = getFirestore();
     
     await admin.auth().setCustomUserClaims(uid, claims);
     
     // Update in Firestore
-    const user = await User.findByUid(uid);
-    if (user) {
-      await user.update({ customClaims: claims });
+    const userRef = db.collection('users').doc(uid);
+    const userDoc = await userRef.get();
+    
+    if (userDoc.exists) {
+      await userRef.update({ 
+        customClaims: claims,
+        updatedAt: new Date()
+      });
     }
     
     res.json({
@@ -124,15 +146,13 @@ export const setCustomClaims = async (req, res) => {
 export const deleteUser = async (req, res) => {
   try {
     const { uid } = req.params;
+    const db = getFirestore();
     
     // Delete from Firebase Auth
     await admin.auth().deleteUser(uid);
     
     // Delete from Firestore
-    const user = await User.findByUid(uid);
-    if (user) {
-      await user.delete();
-    }
+    await db.collection('users').doc(uid).delete();
     
     res.json({
       success: true,
@@ -164,20 +184,32 @@ export const registerUser = async (req, res) => {
     const user = await response.json();
 
     if (!response.ok) {
-      return res.status(400).json({ msg: user.error?.message || 'Register failed' });
+      return res.status(400).json({ 
+        success: false, 
+        message: user.error?.message || 'Registration failed' 
+      });
     }
 
-    // Get Firestore instance and save user
+    // Save user to Firestore
     const db = getFirestore();
     await db.collection('users').doc(user.localId).set({
+      uid: user.localId,
       email,
+      emailVerified: false,
       createdAt: new Date(),
     });
 
-    return res.status(200).json({ msg: 'User registered', id: user.localId });
+    return res.status(200).json({ 
+      success: true, 
+      message: 'User registered successfully',
+      id: user.localId 
+    });
 
   } catch (err) {
-    return res.status(500).json({ msg: err.message });
+    return res.status(500).json({ 
+      success: false, 
+      message: err.message 
+    });
   }
 };
 
@@ -197,13 +229,21 @@ export const loginUser = async (req, res) => {
     const data = await response.json();
 
     if (!response.ok) {
-      return res.status(response.status).json({ msg: data.error?.message || 'LOGIN_FAILED' });
+      return res.status(400).json({ 
+        success: false, 
+        message: data.error?.message || 'Login failed' 
+      });
     }
 
-    return res.json({ msg: 'Login successful', token: data.idToken });
+    return res.json({ 
+      success: true, 
+      message: 'Login successful', 
+      token: data.idToken 
+    });
   } catch (err) {
-    return res.status(500).json({ msg: err.message });
+    return res.status(500).json({ 
+      success: false, 
+      message: err.message 
+    });
   }
 };
-
-console.log('Firebase key:', process.env.FIREBASE_API_KEY);

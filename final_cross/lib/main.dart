@@ -5,6 +5,7 @@ import 'firebase_options.dart';
 import 'src/features/main_screen.dart';
 import 'src/features/course/routes.dart';
 import 'src/data/repositories/course_repository.dart'; // Add this import
+import 'src/features/auth/routes.dart'; // Add this import
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -26,9 +27,16 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
       ),
+      initialRoute: '/login', // Add this line
       onGenerateRoute: (settings) {
         // Create repository instance
         final courseRepo = CourseRepository();
+        
+        // Handle auth routes first
+        final authRoute = AuthRoutes.build(settings);
+        if (authRoute != null) {
+          return authRoute;
+        }
         
         // Handle course routes
         final courseRoute = CourseRoutes.build(settings, courseRepo);
