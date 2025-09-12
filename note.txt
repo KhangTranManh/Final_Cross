@@ -1,0 +1,16 @@
+# Firebase Cloud Functions Setup Guide
+
+## Prerequisites
+- Node.js installed (https://nodejs.org/)
+- Firebase CLI installed globally
+
+## Step 1: Install Firebase CLI
+```bash
+npm install -g firebase-tools
+firebase --version
+firebase login
+firebase projects:list
+firebase init functions
+
+cd functions
+firebase emulators:start --only functions
