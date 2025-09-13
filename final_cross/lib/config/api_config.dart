@@ -3,9 +3,16 @@ import 'package:flutter/foundation.dart';
 class ApiConfig {
   static String get baseUrl {
     if (kIsWeb) {
-      return 'http://localhost:5000'; // Web
+      // For web, use the Cloud Functions URL
+      return 'https://us-central1-your-project-id.cloudfunctions.net/api';
     } else {
-      return 'http://10.0.2.2:5000'; // Android emulator
+      // For mobile (development with emulator)
+      if (kDebugMode) {
+        return 'http://localhost:5001/your-project-id/us-central1/api'; // Local emulator
+      } else {
+        // Production mobile
+        return 'https://us-central1-your-project-id.cloudfunctions.net/api';
+      }
     }
   }
   
@@ -32,7 +39,8 @@ class ApiConfig {
     'Accept': 'application/json',
   };
   
-  static Map<String, String> headersWithAuth(String token) => {
+    // Headers with auth token
+  static Map<String, String> authHeaders(String token) => {
     ...headers,
     'Authorization': 'Bearer $token',
   };

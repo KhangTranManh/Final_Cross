@@ -10,7 +10,7 @@ class AuthRoutes {
         return MaterialPageRoute(
           builder: (context) => LoginPage(
             onLoggedIn: () {
-              Navigator.pushReplacementNamed(context, '/courses');
+              Navigator.pushReplacementNamed(context, '/course-list');
             },
           ),
         );
