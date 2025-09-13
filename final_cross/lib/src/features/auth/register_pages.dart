@@ -1,7 +1,6 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:http/http.dart' as http;
+import 'package:firebase_auth/firebase_auth.dart';
 
 class RegisterPage extends StatefulWidget {
   const RegisterPage({super.key});
@@ -15,6 +14,7 @@ class _RegisterPageState extends State<RegisterPage> {
   final passCtrl = TextEditingController();
   bool loading = false;
   String? error;
+  final FirebaseAuth _auth = FirebaseAuth.instance;
 
   Future<void> _register() async {
     final email = emailCtrl.text.trim();
@@ -25,39 +25,56 @@ class _RegisterPageState extends State<RegisterPage> {
       return;
     }
 
+    if (password.length < 6) {
+      setState(() => error = 'Password must be at least 6 characters');
+      return;
+    }
+
     setState(() {
       loading = true;
       error = null;
     });
 
-    final baseUrl = dotenv.env['API_BASE'];
-    final url = Uri.parse('$baseUrl/auth/register');
-
     try {
-      final res = await http.post(
-        url,
-        headers: {'Content-Type': 'application/json'},
-        body: jsonEncode({'email': email, 'password': password}),
+      // Use Firebase Auth instead of HTTP request
+      final credential = await _auth.createUserWithEmailAndPassword(
+        email: email,
+        password: password,
       );
 
-      if (res.statusCode == 200) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Registration successful! Please login.')),
-        );
-        await Future.delayed(const Duration(seconds: 1));
-        if (mounted) Navigator.pop(context);
-      } else {
-        String msg;
-        try {
-          final data = jsonDecode(res.body);
-          msg = data['msg']?.toString() ?? res.body;
-        } catch (_) {
-          msg = res.body;
+      if (credential.user != null) {
+        // Send email verification
+        await credential.user!.sendEmailVerification();
+        
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Registration successful! Please check your email for verification.'),
+              duration: Duration(seconds: 3),
+            ),
+          );
+          await Future.delayed(const Duration(seconds: 1));
+          Navigator.pop(context);
         }
-        setState(() => error = '${res.statusCode} $msg');
       }
+    } on FirebaseAuthException catch (e) {
+      setState(() {
+        switch (e.code) {
+          case 'weak-password':
+            error = 'The password provided is too weak.';
+            break;
+          case 'email-already-in-use':
+            error = 'An account already exists with that email.';
+            break;
+          case 'invalid-email':
+            error = 'Invalid email address.';
+            break;
+          default:
+            error = e.message ?? 'Registration failed';
+        }
+      });
     } catch (e) {
-      setState(() => error = 'Connection error: $e');
+      setState(() => error = 'An unexpected error occurred: $e');
     }
 
     setState(() => loading = false);
@@ -74,26 +91,44 @@ class _RegisterPageState extends State<RegisterPage> {
             TextField(
               controller: emailCtrl,
               keyboardType: TextInputType.emailAddress,
-              decoration: const InputDecoration(labelText: "Email"),
+              decoration: const InputDecoration(
+                labelText: "Email",
+                border: OutlineInputBorder(),
+              ),
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: 16),
             TextField(
               controller: passCtrl,
               obscureText: true,
-              decoration: const InputDecoration(labelText: "Password"),
-            ),
-            const SizedBox(height: 20),
-            if (error != null)
-              Padding(
-                padding: const EdgeInsets.only(bottom: 8),
-                child: Text(error!, style: const TextStyle(color: Colors.red)),
+              decoration: const InputDecoration(
+                labelText: "Password",
+                border: OutlineInputBorder(),
+                helperText: "At least 6 characters",
               ),
-            loading
-                ? const CircularProgressIndicator()
-                : ElevatedButton(
-                    onPressed: _register,
-                    child: const Text("Register"),
-                  ),
+            ),
+            const SizedBox(height: 24),
+            if (error != null)
+              Container(
+                padding: const EdgeInsets.all(12),
+                margin: const EdgeInsets.only(bottom: 16),
+                decoration: BoxDecoration(
+                  color: Colors.red.shade100,
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Text(
+                  error!,
+                  style: TextStyle(color: Colors.red.shade800),
+                ),
+              ),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: loading ? null : _register,
+                child: loading
+                    ? const CircularProgressIndicator()
+                    : const Text("Register"),
+              ),
+            ),
           ],
         ),
       ),

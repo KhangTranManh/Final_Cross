@@ -7,6 +7,7 @@ import 'src/features/course/routes.dart';
 import 'src/data/repositories/course_repository.dart';
 import 'src/features/auth/routes.dart';
 import 'src/features/auth/login_pages.dart';
+import 'src/features/course/course_list_page.dart'; // Add this import
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -29,28 +30,31 @@ class MyApp extends StatelessWidget {
         useMaterial3: true,
       ),
       initialRoute: '/login',
+      routes: {
+        '/login': (context) => const LoginPage(),
+        '/courses': (context) => const CourseListPage(), // Add this route
+        '/course-list': (context) => const CourseListPage(), // Add this alternative
+      },
+      // Add onGenerateRoute for dynamic routes
       onGenerateRoute: (settings) {
-        // Create repository instance
-        final courseRepo = CourseRepository();
+        // First try course routes
+        final courseRoute = CourseRoutes.build(settings);
+        if (courseRoute != null) {
+          return courseRoute;
+        }
         
-        // Handle auth routes first
+        // Then try auth routes
         final authRoute = AuthRoutes.build(settings);
         if (authRoute != null) {
           return authRoute;
         }
         
-        // Handle course routes
-        final courseRoute = CourseRoutes.build(settings, courseRepo);
-        if (courseRoute != null) {
-          return courseRoute;
-        }
-        
-        // Default fallback
+        // Default route not found
         return MaterialPageRoute(
-          builder: (_) => Scaffold(
-            appBar: AppBar(title: const Text('Not Found')),
+          builder: (context) => Scaffold(
+            appBar: AppBar(title: const Text('Page Not Found')),
             body: Center(
-              child: Text('Route not found: ${settings.name}'),
+              child: Text('Route "${settings.name}" not found'),
             ),
           ),
         );

@@ -1,100 +1,47 @@
 from firebase_admin import firestore
 from datetime import datetime
 
+# Now we can initialize directly since Firebase is initialized in main.py
 db = firestore.client()
 
 class Course:
     def __init__(self, data=None):
-        if data is None:
-            data = {}
-        
-        self.id = data.get('id')
-        self.title = data.get('title')
-        self.description = data.get('description')
-        self.instructor = data.get('instructor')
-        self.duration = data.get('duration')
-        self.difficulty = data.get('difficulty')
-        self.thumbnail = data.get('thumbnail')
-        self.price = data.get('price')
-        self.rating = data.get('rating', 0)
-        self.students_count = data.get('students_count', 0)
-        self.category = data.get('category')
-        self.lessons = data.get('lessons', [])
-        self.is_published = data.get('is_published', False)
-        self.created_at = data.get('created_at', firestore.SERVER_TIMESTAMP)
-        self.updated_at = data.get('updated_at', firestore.SERVER_TIMESTAMP)
-
+        self.data = data or {}
+    
     def save(self):
-        course_data = {
-            'title': self.title,
-            'description': self.description,
-            'instructor': self.instructor,
-            'duration': self.duration,
-            'difficulty': self.difficulty,
-            'thumbnail': self.thumbnail,
-            'price': self.price,
-            'rating': self.rating,
-            'students_count': self.students_count,
-            'category': self.category,
-            'lessons': self.lessons,
-            'is_published': self.is_published,
-            'updated_at': firestore.SERVER_TIMESTAMP
-        }
-
-        if self.id:
-            course_ref = db.collection('courses').document(self.id)
-        else:
-            course_ref = db.collection('courses').document()
-            self.id = course_ref.id
-            course_data['created_at'] = firestore.SERVER_TIMESTAMP
-
-        course_ref.set(course_data)
+        doc_ref = db.collection('courses').document()
+        doc_ref.set(self.data)
+        self.data['id'] = doc_ref.id
         return self
-
-    @staticmethod
-    def find_by_id(course_id):
-        course_doc = db.collection('courses').document(course_id).get()
+    
+    @classmethod
+    def find_all(cls, filters=None):
+        """Find all courses with optional filters"""
+        collection_ref = db.collection('courses')
         
-        if not course_doc.exists:
-            return None
+        if filters:
+            for key, value in filters.items():
+                collection_ref = collection_ref.where(key, '==', value)
         
-        data = course_doc.to_dict()
-        data['id'] = course_doc.id
-        return Course(data)
-
-    @staticmethod
-    def find_all(filters=None):
-        if filters is None:
-            filters = {}
-        
-        query = db.collection('courses')
-
-        if 'is_published' in filters:
-            query = query.where('is_published', '==', filters['is_published'])
-
+        docs = collection_ref.stream()
         courses = []
-        for doc in query.stream():
-            data = doc.to_dict()
-            data['id'] = doc.id
-            courses.append(Course(data))
         
+        for doc in docs:
+            course_data = doc.to_dict()
+            course_data['id'] = doc.id
+            courses.append(cls(course_data))
+            
         return courses
-
+    
+    @classmethod
+    def get_by_id(cls, course_id):
+        doc_ref = db.collection('courses').document(course_id)
+        doc = doc_ref.get()
+        if doc.exists:
+            course_data = doc.to_dict()
+            course_data['id'] = doc.id
+            return cls(course_data)
+        return None
+    
     def to_dict(self):
-        return {
-            'id': self.id,
-            'title': self.title,
-            'description': self.description,
-            'instructor': self.instructor,
-            'duration': self.duration,
-            'difficulty': self.difficulty,
-            'thumbnail': self.thumbnail,
-            'price': self.price,
-            'rating': self.rating,
-            'students_count': self.students_count,
-            'category': self.category,
-            'lessons': self.lessons,
-            'is_published': self.is_published,
-            'created_at': self.created_at,
-            'updated_at': self.updated_at
-        }
+        return self.data

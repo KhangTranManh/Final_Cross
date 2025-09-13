@@ -2,7 +2,9 @@ from firebase_admin import auth, firestore
 from flask import request, jsonify
 import functools
 
-db = firestore.client()
+def get_db():
+    """Get Firestore client instance"""
+    return firestore.client()
 
 def verify_token(f):
     @functools.wraps(f)
@@ -26,7 +28,7 @@ def get_user_profile():
     try:
         uid = request.user['uid']
         
-        user_doc = db.collection('users').document(uid).get()
+        user_doc = get_db().collection('users').document(uid).get()
         
         if not user_doc.exists:
             firebase_user = auth.get_user(uid)
@@ -39,7 +41,7 @@ def get_user_profile():
                 'created_at': firebase_user.user_metadata.creation_timestamp
             }
             
-            db.collection('users').document(uid).set(user_data)
+            get_db().collection('users').document(uid).set(user_data)
             
             return jsonify({
                 'success': True,
@@ -67,6 +69,7 @@ def register_user():
             email_verified=False
         )
 
+        db = get_db()  # Get client when needed
         db.collection('users').document(user_record.uid).set({
             'uid': user_record.uid,
             'email': email,

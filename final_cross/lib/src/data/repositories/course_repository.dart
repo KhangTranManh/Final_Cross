@@ -1,9 +1,13 @@
 import 'dart:convert';
+import 'dart:io';
+import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import '../models/course.dart';
+import '../../../config/api_config.dart';
 
 class CourseRepository {
-  static const String apiBase = 'http://10.0.2.2:5000';
   String? _token;
 
   CourseRepository({String? token}) : _token = token;
@@ -12,51 +16,65 @@ class CourseRepository {
     _token = token;
   }
 
+  // Get Firebase ID token for authentication
+  Future<String?> _getFirebaseToken() async {
+    try {
+      final user = FirebaseAuth.instance.currentUser;
+      if (user != null) {
+        return await user.getIdToken(false);
+      }
+      
+      // Fallback to stored token
+      final prefs = await SharedPreferences.getInstance();
+      return prefs.getString('auth_token');
+    } catch (e) {
+      print('Error getting Firebase token: $e');
+      return null;
+    }
+  }
+
   Future<List<Course>> getCourses() async {
     try {
-      final headers = <String, String>{
-        'Content-Type': 'application/json',
-      };
+      final token = await _getFirebaseToken();
       
-      if (_token != null) {
-        headers['Authorization'] = 'Bearer $_token';
-      }
+      // Debug: Print all URL components
+      print('=== URL DEBUG ===');
+      print('ApiConfig.baseUrl: ${ApiConfig.baseUrl}');
+      print('ApiConfig.coursesUrl: ${ApiConfig.coursesUrl}');
+      print('Platform: ${kIsWeb ? "Web" : (Platform.isAndroid ? "Android" : "iOS/Other")}');
+      print('Debug mode: $kDebugMode');
+      print('================');
+      
+      final url = ApiConfig.coursesUrl;
+      final headers = ApiConfig.getHeaders(token: token);
+
+      print('Making request to: $url');
 
       final response = await http.get(
-        Uri.parse('$apiBase/courses'),
+        Uri.parse(url),
         headers: headers,
       );
 
       print('Response status: ${response.statusCode}');
-      print('Response body: ${response.body}');
+      print('Response body preview: ${response.body.substring(0, response.body.length > 100 ? 100 : response.body.length)}');
 
       if (response.statusCode == 200) {
         final responseData = jsonDecode(response.body);
         
-        // Handle your backend response structure
-        if (responseData is Map<String, dynamic> && responseData.containsKey('data')) {
-          final coursesData = responseData['data'];
-          if (coursesData is List) {
-            return coursesData.map((courseJson) {
-              // Each item might have nested structure like {id: "...", data: {...}}
-              if (courseJson is Map<String, dynamic>) {
-                // If the course data is nested under 'data' key
-                if (courseJson.containsKey('data') && courseJson.containsKey('id')) {
-                  final courseData = Map<String, dynamic>.from(courseJson['data']);
-                  courseData['id'] = courseJson['id']; // Add ID to the data
-                  return Course.fromJson(courseData);
-                } else {
+        // Handle the response structure from your Python function
+        if (responseData is Map<String, dynamic>) {
+          if (responseData.containsKey('success') && responseData['success'] == true) {
+            // Response format: {"success": true, "data": [...], "count": 3}
+            final coursesData = responseData['data'];
+            if (coursesData is List) {
+              return coursesData.map((courseJson) {
+                if (courseJson is Map<String, dynamic>) {
                   return Course.fromJson(Map<String, dynamic>.from(courseJson));
                 }
-              }
-              return Course.fromJson({});
-            }).toList();
+                return Course.fromJson({});
+              }).toList();
+            }
           }
-        }
-        
-        // Fallback: if response is directly a list
-        if (responseData is List) {
-          return responseData.map((courseJson) => Course.fromJson(Map<String, dynamic>.from(courseJson))).toList();
         }
         
         return [];
@@ -71,16 +89,13 @@ class CourseRepository {
 
   Future<Course?> getCourseById(String id) async {
     try {
-      final headers = <String, String>{
-        'Content-Type': 'application/json',
-      };
+      final token = await _getFirebaseToken();
+      final url = ApiConfig.courseByIdUrl(id); // Use the config
       
-      if (_token != null) {
-        headers['Authorization'] = 'Bearer $_token';
-      }
+      final headers = ApiConfig.getHeaders(token: token); // Use the config
 
       final response = await http.get(
-        Uri.parse('$apiBase/courses/$id'),
+        Uri.parse(url),
         headers: headers,
       );
 

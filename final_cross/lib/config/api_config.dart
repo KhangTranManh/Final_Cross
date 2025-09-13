@@ -1,17 +1,26 @@
+import 'dart:io';
 import 'package:flutter/foundation.dart';
 
 class ApiConfig {
   static String get baseUrl {
     if (kIsWeb) {
-      // For web, use the Cloud Functions URL
-      return 'https://us-central1-your-project-id.cloudfunctions.net/api';
-    } else {
-      // For mobile (development with emulator)
       if (kDebugMode) {
-        return 'http://localhost:5001/your-project-id/us-central1/api'; // Local emulator
+        // CORRECT URL for web development with emulator
+        return 'http://127.0.0.1:5001/elearning-5ac35/us-central1/api';
       } else {
-        // Production mobile
-        return 'https://us-central1-your-project-id.cloudfunctions.net/api';
+        return 'https://us-central1-elearning-5ac35.cloudfunctions.net/api';
+      }
+    } else {
+      if (kDebugMode) {
+        if (Platform.isAndroid) {
+          // CORRECT URL for Android emulator
+          return 'http://10.0.2.2:5001/elearning-5ac35/us-central1/api';
+        } else {
+          // CORRECT URL for iOS simulator
+          return 'http://127.0.0.1:5001/elearning-5ac35/us-central1/api';
+        }
+      } else {
+        return 'https://us-central1-elearning-5ac35.cloudfunctions.net/api';
       }
     }
   }
@@ -33,15 +42,16 @@ class ApiConfig {
   static String get enrollmentsUrl => '$baseUrl/enrollments';
   static String enrollmentByIdUrl(String id) => '$baseUrl/enrollments/$id';
   
-  // Common headers
-  static Map<String, String> get headers => {
-    'Content-Type': 'application/json',
-    'Accept': 'application/json',
-  };
-  
-    // Headers with auth token
-  static Map<String, String> authHeaders(String token) => {
-    ...headers,
-    'Authorization': 'Bearer $token',
-  };
+  // Helper method to get headers with authentication
+  static Map<String, String> getHeaders({String? token}) {
+    final headers = <String, String>{
+      'Content-Type': 'application/json',
+    };
+    
+    if (token != null) {
+      headers['Authorization'] = 'Bearer $token';
+    }
+    
+    return headers;
+  }
 }

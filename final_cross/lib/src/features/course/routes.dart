@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'course_list_page.dart';
 import 'course_detail_page.dart';
 import '../../data/models/course.dart';
-import '../../data/repositories/course_repository.dart';
 
 class CourseDetailArgs {
   final Course course;
@@ -11,13 +10,15 @@ class CourseDetailArgs {
 
 class CourseRoutes {
   static const courses = '/courses';
+  static const courseList = '/course-list'; // Add this
   static const courseDetail = '/courses/detail';
 
-  static Route<dynamic>? build(RouteSettings settings, CourseRepository? repo) {
+  static Route<dynamic>? build(RouteSettings settings) {
     switch (settings.name) {
       case courses:
+      case courseList: // Handle both routes
         return MaterialPageRoute(
-          builder: (_) => const CourseListPage(), // Remove repository parameter for now
+          builder: (_) => const CourseListPage(),
         );
 
       case courseDetail:
@@ -29,11 +30,12 @@ class CourseRoutes {
         } else {
           return _errorRoute('Missing course detail data');
         }
+        
+      default:
+        return null;
     }
-
-    return null;
   }
-
+  
   static Route<dynamic> _errorRoute(String message) {
     return MaterialPageRoute(
       builder: (_) => Scaffold(

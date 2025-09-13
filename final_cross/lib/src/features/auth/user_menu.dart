@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class UserMenu extends StatelessWidget {
@@ -10,21 +11,36 @@ class UserMenu extends StatelessWidget {
   });
 
   Future<void> _logout(BuildContext context) async {
-    // Clear stored token
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.remove('auth_token');
-    await prefs.remove('user_data');
-    
-    // Call logout callback
-    onLogout();
-    
-    // Navigate to login
-    if (context.mounted) {
-      Navigator.pushNamedAndRemoveUntil(
-        context, 
-        '/login', 
-        (route) => false,
-      );
+    try {
+      // Sign out from Firebase Auth
+      await FirebaseAuth.instance.signOut();
+      
+      // Clear stored token and user data
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.remove('auth_token');
+      await prefs.remove('user_data');
+      
+      // Call logout callback
+      onLogout();
+      
+      // Navigate to login
+      if (context.mounted) {
+        Navigator.pushNamedAndRemoveUntil(
+          context, 
+          '/login', 
+          (route) => false,
+        );
+      }
+    } catch (e) {
+      print('Logout error: $e');
+      // Still navigate to login even if there's an error
+      if (context.mounted) {
+        Navigator.pushNamedAndRemoveUntil(
+          context, 
+          '/login', 
+          (route) => false,
+        );
+      }
     }
   }
 

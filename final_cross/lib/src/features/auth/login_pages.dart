@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'register_pages.dart';
 import '../course/course_list_page.dart';
@@ -21,15 +21,7 @@ class _LoginPageState extends State<LoginPage> {
   bool loading = false;
   bool showPassword = false;
   String? error;
-
-  // Dynamic API base URL based on platform
-  static String get apiBase {
-    if (kIsWeb) {
-      return 'http://localhost:5000';
-    } else {
-      return 'http://10.0.2.2:5000';
-    }
-  }
+  final FirebaseAuth _auth = FirebaseAuth.instance;
 
   @override
   void initState() {
@@ -38,11 +30,9 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   Future<void> _checkExistingLogin() async {
-    final prefs = await SharedPreferences.getInstance();
-    final token = prefs.getString('auth_token');
-    
-    if (token != null) {
-      // User is already logged in, navigate to courses
+    // Check if user is already logged in with Firebase Auth
+    final user = _auth.currentUser;
+    if (user != null) {
       _navigateToCourses();
     }
   }
@@ -50,7 +40,7 @@ class _LoginPageState extends State<LoginPage> {
   void _navigateToCourses() {
     Navigator.pushNamedAndRemoveUntil(
       context,
-      '/courses',
+      '/courses', // Make sure this matches your route
       (route) => false,
     );
   }
@@ -63,36 +53,49 @@ class _LoginPageState extends State<LoginPage> {
     });
 
     try {
-      final response = await http.post(
-        Uri.parse('$apiBase/auth/login'),
-        headers: {'Content-Type': 'application/json'},
-        body: json.encode({
-          'email': emailCtrl.text.trim(),
-          'password': passCtrl.text,
-        }),
+      // Use Firebase Auth instead of HTTP request
+      final credential = await _auth.signInWithEmailAndPassword(
+        email: emailCtrl.text.trim(),
+        password: passCtrl.text,
       );
 
-      final data = json.decode(response.body);
-      
-      if (response.statusCode == 200 && data['success'] == true) {
-        // Store token
-        final prefs = await SharedPreferences.getInstance();
-        await prefs.setString('auth_token', data['token']);
+      if (credential.user != null) {
+        // Get Firebase ID token and store it - handle null safety
+        final token = await credential.user!.getIdToken();
+        if (token != null) {
+          final prefs = await SharedPreferences.getInstance();
+          await prefs.setString('auth_token', token);
+        }
         
         // Navigate to courses
         _navigateToCourses();
         
         // Call callback if provided
         widget.onLoggedIn?.call();
-      } else {
-        setState(() {
-          error = data['message'] ?? 'Login failed';
-        });
       }
+    } on FirebaseAuthException catch (e) {
+      setState(() {
+        switch (e.code) {
+          case 'user-not-found':
+            error = 'No user found with this email.';
+            break;
+          case 'wrong-password':
+            error = 'Wrong password provided.';
+            break;
+          case 'invalid-email':
+            error = 'Invalid email address.';
+            break;
+          case 'user-disabled':
+            error = 'This account has been disabled.';
+            break;
+          default:
+            error = e.message ?? 'Login failed';
+        }
+      });
     } catch (e) {
       print('Login error: $e');
       setState(() {
-        error = 'Network error. Please check your connection.';
+        error = 'An unexpected error occurred.';
       });
     } finally {
       setState(() {
