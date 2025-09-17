@@ -1,11 +1,7 @@
-import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'register_pages.dart';
-import '../course/course_list_page.dart';
-import '../../data/repositories/course_repository.dart';
 
 class LoginPage extends StatefulWidget {
   final VoidCallback? onLoggedIn;
@@ -22,86 +18,168 @@ class _LoginPageState extends State<LoginPage> {
   bool showPassword = false;
   String? error;
   final FirebaseAuth _auth = FirebaseAuth.instance;
+  bool _isNavigating = false;
 
   @override
   void initState() {
     super.initState();
-    _checkExistingLogin();
-  }
-
-  Future<void> _checkExistingLogin() async {
-    // Check if user is already logged in with Firebase Auth
-    final user = _auth.currentUser;
-    if (user != null) {
-      _navigateToCourses();
-    }
+    // Remove automatic auth check to avoid conflicts
+    // Let the AuthWrapper in main.dart handle this
   }
 
   void _navigateToCourses() {
-    Navigator.pushNamedAndRemoveUntil(
-      context,
-      '/courses', // Make sure this matches your route
-      (route) => false,
-    );
+    if (mounted && !_isNavigating) {
+      _isNavigating = true;
+      Navigator.pushReplacementNamed(context, '/courses').then((_) {
+        if (mounted) {
+          _isNavigating = false;
+        }
+      }).catchError((error) {
+        if (mounted) {
+          _isNavigating = false;
+        }
+      });
+    }
   }
 
   Future<void> _login() async {
-    if (loading) return;
-    setState(() {
-      loading = true;
-      error = null;
-    });
-
-    try {
-      // Use Firebase Auth instead of HTTP request
-      final credential = await _auth.signInWithEmailAndPassword(
-        email: emailCtrl.text.trim(),
-        password: passCtrl.text,
-      );
-
-      if (credential.user != null) {
-        // Get Firebase ID token and store it - handle null safety
-        final token = await credential.user!.getIdToken();
-        if (token != null) {
-          final prefs = await SharedPreferences.getInstance();
-          await prefs.setString('auth_token', token);
-        }
-        
-        // Navigate to courses
-        _navigateToCourses();
-        
-        // Call callback if provided
-        widget.onLoggedIn?.call();
+    if (loading || _isNavigating) return;
+    
+    final email = emailCtrl.text.trim();
+    final password = passCtrl.text.trim();
+    
+    if (email.isEmpty || password.isEmpty) {
+      if (mounted) {
+        setState(() => error = 'Email and password are required');
       }
-    } on FirebaseAuthException catch (e) {
+      return;
+    }
+
+    if (mounted) {
       setState(() {
-        switch (e.code) {
-          case 'user-not-found':
-            error = 'No user found with this email.';
-            break;
-          case 'wrong-password':
-            error = 'Wrong password provided.';
-            break;
-          case 'invalid-email':
-            error = 'Invalid email address.';
-            break;
-          case 'user-disabled':
-            error = 'This account has been disabled.';
-            break;
-          default:
-            error = e.message ?? 'Login failed';
-        }
-      });
-    } catch (e) {
-      print('Login error: $e');
-      setState(() {
-        error = 'An unexpected error occurred.';
-      });
-    } finally {
-      setState(() {
-        loading = false;
+        loading = true;
+        error = null;
       });
     }
+
+    try {
+      // Platform-specific approach to avoid type casting issues
+      UserCredential? credential;
+      
+      // Try the login and handle the specific platform error
+      try {
+        credential = await _auth.signInWithEmailAndPassword(
+          email: email,
+          password: password,
+        );
+      } catch (platformError) {
+        // If we get the platform-specific error, try alternative approach
+        if (platformError.toString().contains('PigeonUserDetails')) {
+          // Wait a moment and check if auth actually succeeded
+          await Future.delayed(const Duration(milliseconds: 500));
+          
+          // Check if user is now authenticated despite the error
+          final currentUser = _auth.currentUser;
+          if (currentUser != null) {
+            if (kDebugMode) {
+              print('Login succeeded despite platform error');
+            }
+            
+            if (mounted && !_isNavigating) {
+              // Navigate to courses
+              _navigateToCourses();
+              widget.onLoggedIn?.call();
+            }
+            return;
+          }
+        }
+        // Re-throw if it's not the known platform error
+        throw platformError;
+      }
+
+      // Normal success path
+      if (credential?.user != null && mounted) {
+        if (mounted) {
+          setState(() => error = null);
+        }
+        
+        await Future.delayed(const Duration(milliseconds: 200));
+        
+        if (mounted && !_isNavigating) {
+          _navigateToCourses();
+          widget.onLoggedIn?.call();
+        }
+      }
+    } on FirebaseAuthException catch (e) {
+      if (kDebugMode) {
+        print('FirebaseAuth error: ${e.code} - ${e.message}');
+      }
+      
+      if (mounted) {
+        setState(() {
+          switch (e.code) {
+            case 'user-not-found':
+              error = 'No user found with this email.';
+              break;
+            case 'wrong-password':
+              error = 'Wrong password provided.';
+              break;
+            case 'invalid-email':
+              error = 'Invalid email address.';
+              break;
+            case 'user-disabled':
+              error = 'This account has been disabled.';
+              break;
+            case 'invalid-credential':
+              error = 'Invalid email or password.';
+              break;
+            case 'network-request-failed':
+              error = 'Network error. Please check your connection.';
+              break;
+            case 'too-many-requests':
+              error = 'Too many failed attempts. Please try again later.';
+              break;
+            default:
+              error = 'Login failed. Please try again.';
+          }
+        });
+      }
+    } catch (e) {
+      // Handle any other errors (including platform-specific type casting)
+      if (kDebugMode) {
+        print('General login error: $e');
+      }
+      
+      if (mounted) {
+        setState(() {
+          error = 'Login failed. Please check your connection and try again.';
+        });
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          loading = false;
+        });
+      }
+    }
+  }
+
+  void _navigateToRegister() {
+    if (mounted && !loading && !_isNavigating) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => const RegisterPage(),
+        ),
+      );
+    }
+  }
+
+  @override
+  void dispose() {
+    emailCtrl.dispose();
+    passCtrl.dispose();
+    super.dispose();
   }
 
   @override
@@ -109,81 +187,136 @@ class _LoginPageState extends State<LoginPage> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Login'),
-        automaticallyImplyLeading: false, // Remove back button
+        automaticallyImplyLeading: false,
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            if (error != null)
-              Container(
-                padding: const EdgeInsets.all(12),
-                margin: const EdgeInsets.only(bottom: 16),
-                decoration: BoxDecoration(
-                  color: Colors.red.shade100,
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Text(
-                  error!,
-                  style: TextStyle(color: Colors.red.shade800),
+      body: SafeArea(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const SizedBox(height: 50),
+              
+              // App Logo or Title
+              const Text(
+                'Welcome Back',
+                style: TextStyle(
+                  fontSize: 28,
+                  fontWeight: FontWeight.bold,
                 ),
               ),
-            
-            TextField(
-              controller: emailCtrl,
-              decoration: const InputDecoration(
-                labelText: 'Email',
-                border: OutlineInputBorder(),
+              const SizedBox(height: 8),
+              const Text(
+                'Sign in to continue',
+                style: TextStyle(
+                  fontSize: 16,
+                  color: Colors.grey,
+                ),
               ),
-              keyboardType: TextInputType.emailAddress,
-            ),
-            const SizedBox(height: 16),
-            
-            TextField(
-              controller: passCtrl,
-              decoration: InputDecoration(
-                labelText: 'Password',
-                border: const OutlineInputBorder(),
-                suffixIcon: IconButton(
-                  icon: Icon(
-                    showPassword ? Icons.visibility : Icons.visibility_off,
+              const SizedBox(height: 50),
+              
+              // Error display
+              if (error != null)
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(12),
+                  margin: const EdgeInsets.only(bottom: 16),
+                  decoration: BoxDecoration(
+                    color: Colors.red.shade100,
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(color: Colors.red.shade300),
                   ),
-                  onPressed: () {
-                    setState(() {
-                      showPassword = !showPassword;
-                    });
-                  },
+                  child: Row(
+                    children: [
+                      Icon(Icons.error_outline, color: Colors.red.shade700),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          error!,
+                          style: TextStyle(color: Colors.red.shade800),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              
+              // Email field
+              TextField(
+                controller: emailCtrl,
+                decoration: const InputDecoration(
+                  labelText: 'Email',
+                  border: OutlineInputBorder(),
+                  prefixIcon: Icon(Icons.email_outlined),
+                ),
+                keyboardType: TextInputType.emailAddress,
+                enabled: !loading,
+                autocorrect: false,
+                textInputAction: TextInputAction.next,
+              ),
+              const SizedBox(height: 16),
+              
+              // Password field
+              TextField(
+                controller: passCtrl,
+                decoration: InputDecoration(
+                  labelText: 'Password',
+                  border: const OutlineInputBorder(),
+                  prefixIcon: const Icon(Icons.lock_outlined),
+                  suffixIcon: IconButton(
+                    icon: Icon(
+                      showPassword ? Icons.visibility : Icons.visibility_off,
+                    ),
+                    onPressed: loading ? null : () {
+                      setState(() {
+                        showPassword = !showPassword;
+                      });
+                    },
+                  ),
+                ),
+                obscureText: !showPassword,
+                enabled: !loading,
+                textInputAction: TextInputAction.done,
+                onSubmitted: (_) => _login(),
+              ),
+              const SizedBox(height: 24),
+              
+              // Login button
+              SizedBox(
+                width: double.infinity,
+                height: 48,
+                child: ElevatedButton(
+                  onPressed: loading || _isNavigating ? null : _login,
+                  style: ElevatedButton.styleFrom(
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                  ),
+                  child: loading
+                      ? const SizedBox(
+                          height: 20,
+                          width: 20,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: Colors.white,
+                          ),
+                        )
+                      : const Text(
+                          'Login',
+                          style: TextStyle(fontSize: 16),
+                        ),
                 ),
               ),
-              obscureText: !showPassword,
-            ),
-            const SizedBox(height: 24),
-            
-            SizedBox(
-              width: double.infinity,
-              height: 48,
-              child: ElevatedButton(
-                onPressed: loading ? null : _login,
-                child: loading
-                    ? const CircularProgressIndicator()
-                    : const Text('Login'),
+              const SizedBox(height: 16),
+              
+              // Register button
+              TextButton(
+                onPressed: loading || _isNavigating ? null : _navigateToRegister,
+                child: const Text('Don\'t have an account? Register'),
               ),
-            ),
-            const SizedBox(height: 16),
-            
-            TextButton(
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => const RegisterPage(),
-                  ),
-                );
-              },
-              child: const Text('Don\'t have an account? Register'),
-            ),
-          ],
+              
+              const SizedBox(height: 50),
+            ],
+          ),
         ),
       ),
     );
