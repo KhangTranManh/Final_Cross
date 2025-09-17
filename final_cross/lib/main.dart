@@ -2,12 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
-import 'src/features/main_screen.dart';
-import 'src/features/course/routes.dart';
-import 'src/data/repositories/course_repository.dart';
-import 'src/features/auth/routes.dart';
 import 'src/features/auth/login_pages.dart';
-import 'src/features/course/course_list_page.dart'; // Add this import
+import 'src/features/course/course_list_page.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -32,29 +28,25 @@ class MyApp extends StatelessWidget {
       initialRoute: '/login',
       routes: {
         '/login': (context) => const LoginPage(),
-        '/courses': (context) => const CourseListPage(), // Add this route
-        '/course-list': (context) => const CourseListPage(), // Add this alternative
+        '/courses': (context) => const CourseListPage(),
+        '/course-list': (context) => const CourseListPage(),
       },
-      // Add onGenerateRoute for dynamic routes
-      onGenerateRoute: (settings) {
-        // First try course routes
-        final courseRoute = CourseRoutes.build(settings);
-        if (courseRoute != null) {
-          return courseRoute;
-        }
-        
-        // Then try auth routes
-        final authRoute = AuthRoutes.build(settings);
-        if (authRoute != null) {
-          return authRoute;
-        }
-        
-        // Default route not found
+      // Simple error handling for unknown routes
+      onUnknownRoute: (settings) {
         return MaterialPageRoute(
           builder: (context) => Scaffold(
             appBar: AppBar(title: const Text('Page Not Found')),
             body: Center(
-              child: Text('Route "${settings.name}" not found'),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text('Route "${settings.name}" not found'),
+                  ElevatedButton(
+                    onPressed: () => Navigator.pushReplacementNamed(context, '/login'),
+                    child: const Text('Go to Login'),
+                  ),
+                ],
+              ),
             ),
           ),
         );

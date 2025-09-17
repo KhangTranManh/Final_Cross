@@ -1,11 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:final_cross/src/features/course/routes.dart'; // ✅ For route constants
-import '../../constants/app_strings.dart';
-import '../../constants/app_sizes.dart';
 import '../../data/repositories/course_repository.dart';
 import '../../data/models/course.dart';
-import 'course_detail_page.dart'; // You can keep this for CourseDetailArgs
 import '../auth/user_menu.dart';
+import 'course_detail_page.dart'; // Make sure this import is here
 
 class CourseListPage extends StatefulWidget {
   const CourseListPage({super.key});
@@ -15,13 +12,48 @@ class CourseListPage extends StatefulWidget {
 }
 
 class _CourseListPageState extends State<CourseListPage> {
-  final CourseRepository repo = CourseRepository(); // Initialize your repository here
+  late final CourseRepository _courseRepository;
+  List<Course> _courses = [];
+  bool _isLoading = true;
+  String? _errorMessage;
+
+  @override
+  void initState() {
+    super.initState();
+    // Create repository directly here - no DI needed
+    _courseRepository = CourseRepository();
+    _loadCourses();
+  }
+
+  Future<void> _loadCourses() async {
+    try {
+      setState(() {
+        _isLoading = true;
+        _errorMessage = null;
+      });
+
+      final courses = await _courseRepository.getCourses();
+      
+      if (mounted) {
+        setState(() {
+          _courses = courses;
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      print('Error loading courses: $e');
+      if (mounted) {
+        setState(() {
+          _errorMessage = e.toString();
+          _isLoading = false;
+        });
+      }
+    }
+  }
 
   void _handleLogout() {
-    // Clear any local state if needed
-    setState(() {
-      // Reset any user-specific data
-    });
+    // This callback is called when user logs out from UserMenu
+    print('User logged out from courses page');
   }
 
   @override
@@ -29,47 +61,152 @@ class _CourseListPageState extends State<CourseListPage> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Courses'),
-        automaticallyImplyLeading: false, // Remove back button
+        automaticallyImplyLeading: false, // Remove back button since this is main page
         actions: [
-          UserMenu(
-            onLogout: _handleLogout,
+          IconButton(
+            icon: const Icon(Icons.refresh),
+            onPressed: _loadCourses,
+            tooltip: 'Refresh courses',
           ),
-          const SizedBox(width: 8),
+          UserMenu(onLogout: _handleLogout), // Add user menu here
+          const SizedBox(width: 8), // Small padding from edge
         ],
       ),
-      body: FutureBuilder<List<Course>>(
-        future: repo.getCourses(),
-        builder: (context, snap) {
-          if (snap.connectionState != ConnectionState.done) {
-            return const Center(child: CircularProgressIndicator());
-          }
-          if (snap.hasError) {
-            return Center(child: Text('Error: ${snap.error}'));
-          }
+      body: _buildBody(),
+    );
+  }
 
-          final courses = snap.data ?? [];
-          if (courses.isEmpty) {
-            return const Center(child: Text('No courses yet'));
-          }
+  Widget _buildBody() {
+    if (_isLoading) {
+      return const Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            CircularProgressIndicator(),
+            SizedBox(height: 16),
+            Text('Loading courses...'),
+          ],
+        ),
+      );
+    }
 
-          return ListView.separated(
-            padding: pad16,
-            itemCount: courses.length,
-            separatorBuilder: (_, __) => const Divider(),
-            itemBuilder: (context, i) {
-              final c = courses[i];
-              return ListTile(
-                leading: CircleAvatar(backgroundImage: NetworkImage(c.thumbnailUrl)),
-                title: Text(c.title),
-                subtitle: Text('${c.lessonCount} lessons'),
-                trailing: const Icon(Icons.arrow_forward_ios, size: 16),
-                onTap: () => Navigator.pushNamed(
+    if (_errorMessage != null) {
+      return Center(
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                Icons.error_outline,
+                size: 64,
+                color: Theme.of(context).colorScheme.error,
+              ),
+              const SizedBox(height: 16),
+              Text(
+                'Error loading courses',
+                style: Theme.of(context).textTheme.headlineSmall,
+              ),
+              const SizedBox(height: 8),
+              Text(
+                _errorMessage!,
+                textAlign: TextAlign.center,
+                style: Theme.of(context).textTheme.bodyMedium,
+              ),
+              const SizedBox(height: 16),
+              ElevatedButton(
+                onPressed: _loadCourses,
+                child: const Text('Retry'),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    if (_courses.isEmpty) {
+      return const Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.school, size: 64),
+            SizedBox(height: 16),
+            Text('No courses available'),
+          ],
+        ),
+      );
+    }
+
+    return RefreshIndicator(
+      onRefresh: _loadCourses,
+      child: ListView.builder(
+        padding: const EdgeInsets.all(16),
+        itemCount: _courses.length,
+        itemBuilder: (context, index) {
+          final course = _courses[index];
+          return Card(
+            margin: const EdgeInsets.only(bottom: 16),
+            child: ListTile(
+              leading: CircleAvatar(
+                child: Text(course.title.isNotEmpty ? course.title[0] : 'C'),
+              ),
+              title: Text(
+                course.title,
+                style: const TextStyle(fontWeight: FontWeight.bold),
+              ),
+              subtitle: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  if (course.description.isNotEmpty)
+                    Text(
+                      course.description,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  const SizedBox(height: 4),
+                  Row(
+                    children: [
+                      if (course.instructor.isNotEmpty) ...[
+                        const Icon(Icons.person, size: 16),
+                        const SizedBox(width: 4),
+                        Text(course.instructor),
+                        const SizedBox(width: 16),
+                      ],
+                      if (course.duration > 0) ...[
+                        const Icon(Icons.access_time, size: 16),
+                        const SizedBox(width: 4),
+                        Text('${course.duration} min'),
+                      ],
+                    ],
+                  ),
+                ],
+              ),
+              trailing: course.price > 0
+                  ? Text(
+                      '\$${course.price.toStringAsFixed(2)}',
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        color: Theme.of(context).primaryColor,
+                      ),
+                    )
+                  : const Text(
+                      'Free',
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        color: Colors.green,
+                      ),
+                    ),
+              onTap: () {
+                // Navigate to course detail page
+                print('Navigating to course detail: ${course.id} - ${course.title}');
+                Navigator.push(
                   context,
-                  CourseRoutes.courseDetail,
-                  arguments: CourseDetailArgs(course: c),
-                ),
-              );
-            },
+                  MaterialPageRoute(
+                    builder: (context) => CourseDetailPage(course: course),
+                  ),
+                );
+              },
+            ),
           );
         },
       ),

@@ -35,54 +35,62 @@ class CourseRepository {
 
   Future<List<Course>> getCourses() async {
     try {
+      print('=== COURSE REPOSITORY DEBUG ===');
+      
       final token = await _getFirebaseToken();
-      
-      // Debug: Print all URL components
-      print('=== URL DEBUG ===');
-      print('ApiConfig.baseUrl: ${ApiConfig.baseUrl}');
-      print('ApiConfig.coursesUrl: ${ApiConfig.coursesUrl}');
-      print('Platform: ${kIsWeb ? "Web" : (Platform.isAndroid ? "Android" : "iOS/Other")}');
-      print('Debug mode: $kDebugMode');
-      print('================');
-      
       final url = ApiConfig.coursesUrl;
+      
+      print('Platform: ${kIsWeb ? "Web" : Platform.operatingSystem}');
+      print('Base URL: ${ApiConfig.baseUrl}');
+      print('Full URL: $url');
+      print('Has token: ${token != null}');
+      print('================================');
+      
       final headers = ApiConfig.getHeaders(token: token);
-
-      print('Making request to: $url');
 
       final response = await http.get(
         Uri.parse(url),
         headers: headers,
-      );
+      ).timeout(const Duration(seconds: 10));
 
       print('Response status: ${response.statusCode}');
-      print('Response body preview: ${response.body.substring(0, response.body.length > 100 ? 100 : response.body.length)}');
+      print('Response body preview: ${response.body.substring(0, response.body.length > 200 ? 200 : response.body.length)}');
 
       if (response.statusCode == 200) {
+        // Check if response is HTML instead of JSON
+        if (response.body.trim().startsWith('<!DOCTYPE') || 
+            response.body.trim().startsWith('<html')) {
+          throw Exception('API returned HTML instead of JSON. Check Firebase emulators are running.');
+        }
+        
         final responseData = jsonDecode(response.body);
+        print('✅ JSON parsed successfully');
         
         // Handle the response structure from your Python function
         if (responseData is Map<String, dynamic>) {
           if (responseData.containsKey('success') && responseData['success'] == true) {
-            // Response format: {"success": true, "data": [...], "count": 3}
             final coursesData = responseData['data'];
+            
             if (coursesData is List) {
-              return coursesData.map((courseJson) {
+              final courses = coursesData.map((courseJson) {
                 if (courseJson is Map<String, dynamic>) {
                   return Course.fromJson(Map<String, dynamic>.from(courseJson));
                 }
                 return Course.fromJson({});
               }).toList();
+              
+              print('✅ Successfully parsed ${courses.length} courses');
+              return courses;
             }
           }
         }
         
-        return [];
+        throw Exception('Invalid response format from API');
       } else {
         throw Exception('Failed to load courses: ${response.statusCode} - ${response.body}');
       }
     } catch (e) {
-      print('Error fetching courses: $e');
+      print('❌ Error fetching courses: $e');
       throw Exception('Error fetching courses: $e');
     }
   }
@@ -90,9 +98,9 @@ class CourseRepository {
   Future<Course?> getCourseById(String id) async {
     try {
       final token = await _getFirebaseToken();
-      final url = ApiConfig.courseByIdUrl(id); // Use the config
+      final url = ApiConfig.courseByIdUrl(id);
       
-      final headers = ApiConfig.getHeaders(token: token); // Use the config
+      final headers = ApiConfig.getHeaders(token: token);
 
       final response = await http.get(
         Uri.parse(url),

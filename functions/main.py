@@ -60,7 +60,7 @@ def api(req):
         
         print(f"Request: {method} {path}")
         
-        # Route to courses manually
+        # Route to courses
         if path == '/courses' or path == '/courses/':
             if method == 'GET':
                 from models.course import Course
@@ -73,22 +73,7 @@ def api(req):
                     'count': len(course_list)
                 })
         
-        # Route to root
-        elif path == '/' or path == '':
-            return jsonify({
-                'message': 'API is working',
-                'status': 'success',
-                'endpoints': {
-                    'courses': '/courses',
-                    'categories': '/categories'
-                }
-            })
-        
-        # Route to health
-        elif path == '/health':
-            return jsonify({'status': 'healthy'})
-        
-        # Route to specific course
+        # Route to specific course by ID
         elif path.startswith('/courses/') and len(path.split('/')) == 3:
             course_id = path.split('/')[2]
             if method == 'GET':
@@ -104,6 +89,21 @@ def api(req):
                         'success': False,
                         'error': 'Course not found'
                     }), 404
+        
+        # Route to root
+        elif path == '/' or path == '':
+            return jsonify({
+                'message': 'API is working',
+                'status': 'success',
+                'endpoints': {
+                    'courses': '/courses',
+                    'categories': '/categories'
+                }
+            })
+        
+        # Route to health
+        elif path == '/health':
+            return jsonify({'status': 'healthy'})
         
         # Default - not found
         return jsonify({

@@ -32,344 +32,267 @@ class _CourseDetailPageState extends State<CourseDetailPage> {
         future: _courseDetailFuture,
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
-          }
-          
-          if (snapshot.hasError) {
-            return Center(
+            return const Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Icon(Icons.error_outline, size: 48, color: Colors.red),
-                  const SizedBox(height: 16),
-                  Text('Error: ${snapshot.error}'),
-                  const SizedBox(height: 16),
-                  ElevatedButton(
-                    onPressed: () {
-                      setState(() {
-                        _courseDetailFuture = _repository.getCourseById(widget.course.id);
-                      });
-                    },
-                    child: const Text('Retry'),
-                  ),
+                  CircularProgressIndicator(),
+                  SizedBox(height: 16),
+                  Text('Loading course details...'),
                 ],
               ),
             );
           }
-          
-          // Use detailed course data if available, fallback to basic course data
+
+          if (snapshot.hasError) {
+            return Center(
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(
+                      Icons.error_outline,
+                      size: 64,
+                      color: Theme.of(context).colorScheme.error,
+                    ),
+                    const SizedBox(height: 16),
+                    Text(
+                      'Error loading course details',
+                      style: Theme.of(context).textTheme.headlineSmall,
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      snapshot.error.toString(),
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 16),
+                    ElevatedButton(
+                      onPressed: () {
+                        setState(() {
+                          _courseDetailFuture = _repository.getCourseById(widget.course.id);
+                        });
+                      },
+                      child: const Text('Retry'),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          }
+
           final course = snapshot.data ?? widget.course;
-          
-          return SingleChildScrollView(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                // Course thumbnail
-                Container(
-                  height: 200,
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(12),
-                    image: DecorationImage(
-                      image: NetworkImage(course.thumbnailUrl),
-                      fit: BoxFit.cover,
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 24),
-                
-                // Course title
-                Text(
-                  course.title,
-                  style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 8),
-                
-                // Instructor name (from API data)
-                if (course.instructor != null)
-                  Text(
-                    'by ${course.instructor}',
-                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                      color: Theme.of(context).colorScheme.primary,
-                      fontWeight: FontWeight.w500,
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-                const SizedBox(height: 16),
-                
-                // Course description
-                Container(
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    color: Theme.of(context).colorScheme.surface,
-                    borderRadius: BorderRadius.circular(8),
-                    border: Border.all(
-                      color: Theme.of(context).colorScheme.outline.withOpacity(0.2),
-                    ),
-                  ),
-                  child: Text(
-                    course.description,
-                    style: Theme.of(context).textTheme.bodyMedium,
-                  ),
-                ),
-                const SizedBox(height: 24),
-                
-                // Course info cards with real data
-                Row(
-                  children: [
-                    Expanded(
-                      child: _buildInfoCard(
-                        context,
-                        Icons.play_lesson,
-                        'Lessons',
-                        '${course.lessonCount}',
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: _buildInfoCard(
-                        context,
-                        Icons.access_time,
-                        'Duration',
-                        _formatDuration(course.duration ?? 0),
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: _buildInfoCard(
-                        context,
-                        Icons.signal_cellular_alt,
-                        'Level',
-                        course.difficulty ?? 'Beginner',
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 16),
-                
-                // Additional info row (rating, students, price)
-                Row(
-                  children: [
-                    if (course.rating != null)
-                      Expanded(
-                        child: _buildInfoCard(
-                          context,
-                          Icons.star,
-                          'Rating',
-                          '${course.rating?.toStringAsFixed(1)} ⭐',
-                        ),
-                      ),
-                    if (course.rating != null) const SizedBox(width: 12),
-                    Expanded(
-                      child: _buildInfoCard(
-                        context,
-                        Icons.people,
-                        'Students',
-                        '${course.studentsCount ?? 0}',
-                      ),
-                    ),
-                    if (course.price != null && course.price! > 0) ...[
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: _buildInfoCard(
-                          context,
-                          Icons.attach_money,
-                          'Price',
-                          '\$${course.price?.toStringAsFixed(0)}',
-                        ),
-                      ),
-                    ],
-                  ],
-                ),
-                const SizedBox(height: 32),
-                
-                // Start Learning button
-                ElevatedButton.icon(
-                  onPressed: () {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text('Starting "${course.title}" course...'),
-                        backgroundColor: Theme.of(context).colorScheme.primary,
-                      ),
-                    );
-                  },
-                  icon: const Icon(Icons.play_circle_fill, size: 24),
-                  label: const Text(
-                    'Start Learning',
-                    style: TextStyle(fontSize: 16),
-                  ),
-                  style: ElevatedButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 16),
-                
-                // Preview lessons button with real lesson data
-                OutlinedButton.icon(
-                  onPressed: () {
-                    _showLessonsPreview(context, course);
-                  },
-                  icon: const Icon(Icons.list),
-                  label: const Text('Preview Lessons'),
-                  style: OutlinedButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          );
+          return _buildCourseDetail(course);
         },
       ),
     );
   }
 
-  Widget _buildInfoCard(BuildContext context, IconData icon, String title, String value) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.primaryContainer.withOpacity(0.1),
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(
-          color: Theme.of(context).colorScheme.primary.withOpacity(0.2),
-        ),
-      ),
+  Widget _buildCourseDetail(Course course) {
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(16.0),
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(
-            icon,
-            color: Theme.of(context).colorScheme.primary,
-            size: 24,
-          ),
-          const SizedBox(height: 8),
-          Text(
-            value,
-            style: Theme.of(context).textTheme.titleMedium?.copyWith(
-              fontWeight: FontWeight.bold,
-              color: Theme.of(context).colorScheme.primary,
+          // Course Header
+          _buildCourseHeader(course),
+          const SizedBox(height: 24),
+          
+          // Course Info Cards
+          _buildCourseInfo(course),
+          const SizedBox(height: 24),
+          
+          // Description
+          if (course.description.isNotEmpty) ...[
+            _buildSectionTitle('Description'),
+            const SizedBox(height: 8),
+            Text(
+              course.description,
+              style: Theme.of(context).textTheme.bodyMedium,
             ),
-            textAlign: TextAlign.center,
-          ),
-          const SizedBox(height: 4),
-          Text(
-            title,
-            style: Theme.of(context).textTheme.bodySmall,
-            textAlign: TextAlign.center,
-          ),
+            const SizedBox(height: 24),
+          ],
+          
+          // Lessons (if available)
+          if (course.lessons.isNotEmpty) ...[
+            _buildSectionTitle('Lessons'),
+            const SizedBox(height: 8),
+            _buildLessonsList(course.lessons),
+            const SizedBox(height: 24),
+          ],
+          
+          // Enroll Button
+          _buildEnrollButton(course),
         ],
       ),
     );
   }
 
-  String _formatDuration(int minutes) {
-    if (minutes < 60) {
-      return '${minutes}min';
-    } else {
-      final hours = minutes ~/ 60;
-      final remainingMinutes = minutes % 60;
-      if (remainingMinutes == 0) {
-        return '${hours}h';
-      } else {
-        return '${hours}h ${remainingMinutes}min';
-      }
-    }
+  Widget _buildCourseHeader(Course course) {
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              course.title,
+              style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(height: 8),
+            if (course.instructor.isNotEmpty)
+              Row(
+                children: [
+                  const Icon(Icons.person, size: 16),
+                  const SizedBox(width: 4),
+                  Text(
+                    'Instructor: ${course.instructor}',
+                    style: Theme.of(context).textTheme.bodyMedium,
+                  ),
+                ],
+              ),
+            const SizedBox(height: 8),
+            Row(
+              children: [
+                if (course.rating > 0) ...[
+                  const Icon(Icons.star, color: Colors.amber, size: 16),
+                  const SizedBox(width: 4),
+                  Text('${course.rating.toStringAsFixed(1)}'),
+                  const SizedBox(width: 16),
+                ],
+                if (course.studentsCount > 0) ...[
+                  const Icon(Icons.people, size: 16),
+                  const SizedBox(width: 4),
+                  Text('${course.studentsCount} students'),
+                ],
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
   }
 
-  void _showLessonsPreview(BuildContext context, Course course) {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+  Widget _buildCourseInfo(Course course) {
+    return Row(
+      children: [
+        Expanded(
+          child: _buildInfoCard(
+            'Duration',
+            course.duration > 0 ? '${course.duration} min' : 'Not specified',
+            Icons.access_time,
+          ),
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: _buildInfoCard(
+            'Difficulty',
+            course.difficulty.isNotEmpty ? course.difficulty : 'Not specified',
+            Icons.trending_up,
+          ),
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: _buildInfoCard(
+            'Price',
+            course.price > 0 ? '\$${course.price.toStringAsFixed(2)}' : 'Free',
+            Icons.attach_money,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildInfoCard(String title, String value, IconData icon) {
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(12.0),
+        child: Column(
+          children: [
+            Icon(icon, size: 24, color: Theme.of(context).primaryColor),
+            const SizedBox(height: 8),
+            Text(
+              title,
+              style: Theme.of(context).textTheme.bodySmall,
+            ),
+            const SizedBox(height: 4),
+            Text(
+              value,
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                fontWeight: FontWeight.bold,
+              ),
+              textAlign: TextAlign.center,
+            ),
+          ],
+        ),
       ),
-      builder: (context) => DraggableScrollableSheet(
-        initialChildSize: 0.6,
-        maxChildSize: 0.9,
-        minChildSize: 0.3,
-        expand: false,
-        builder: (context, scrollController) => Container(
-          padding: const EdgeInsets.all(20),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'Course Lessons',
-                style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              const SizedBox(height: 16),
-              Text(
-                'This course contains ${course.lessonCount} lessons:',
-                style: Theme.of(context).textTheme.bodyMedium,
-              ),
-              const SizedBox(height: 16),
-              Expanded(
-                child: course.lessons != null && course.lessons!.isNotEmpty
-                    ? ListView.separated(
-                        controller: scrollController,
-                        itemCount: course.lessons!.length,
-                        separatorBuilder: (context, index) => const Divider(),
-                        itemBuilder: (context, index) {
-                          final lesson = course.lessons![index];
-                          return ListTile(
-                            leading: CircleAvatar(
-                              backgroundColor: Theme.of(context).colorScheme.primary,
-                              child: Text(
-                                '${index + 1}',
-                                style: const TextStyle(
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ),
-                            title: Text(
-                              lesson.title,
-                              style: const TextStyle(fontWeight: FontWeight.w500),
-                            ),
-                            subtitle: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                if (lesson.description.isNotEmpty)
-                                  Text(lesson.description),
-                                const SizedBox(height: 4),
-                                Text(
-                                  '${lesson.duration} minutes',
-                                  style: TextStyle(
-                                    color: Theme.of(context).colorScheme.primary,
-                                    fontWeight: FontWeight.w500,
-                                  ),
-                                ),
-                              ],
-                            ),
-                            trailing: const Icon(Icons.play_circle_outline),
-                          );
-                        },
-                      )
-                    : Center(
-                        child: Text(
-                          'No lesson details available yet',
-                          style: Theme.of(context).textTheme.bodyLarge,
-                        ),
-                      ),
-              ),
-              const SizedBox(height: 16),
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: () => Navigator.pop(context),
-                  child: const Text('Close'),
-                ),
-              ),
-            ],
+    );
+  }
+
+  Widget _buildSectionTitle(String title) {
+    return Text(
+      title,
+      style: Theme.of(context).textTheme.titleLarge?.copyWith(
+        fontWeight: FontWeight.bold,
+      ),
+    );
+  }
+
+  Widget _buildLessonsList(List<dynamic> lessons) {
+    return Card(
+      child: Column(
+        children: lessons.asMap().entries.map((entry) {
+          final index = entry.key;
+          final lesson = entry.value;
+          final lessonTitle = lesson is Map ? lesson['title'] ?? 'Lesson ${index + 1}' : 'Lesson ${index + 1}';
+          final lessonDuration = lesson is Map ? lesson['duration'] ?? 0 : 0;
+          
+          return ListTile(
+            leading: CircleAvatar(
+              backgroundColor: Theme.of(context).primaryColor,
+              child: Text('${index + 1}'),
+            ),
+            title: Text(lessonTitle),
+            trailing: lessonDuration > 0 
+                ? Text('${lessonDuration} min')
+                : null,
+            onTap: () {
+              // TODO: Navigate to lesson detail or video player
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text('Selected: $lessonTitle')),
+              );
+            },
+          );
+        }).toList(),
+      ),
+    );
+  }
+
+  Widget _buildEnrollButton(Course course) {
+    return SizedBox(
+      width: double.infinity,
+      height: 48,
+      child: ElevatedButton(
+        onPressed: () {
+          // TODO: Implement enrollment logic
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Enrolled in ${course.title}!'),
+              backgroundColor: Colors.green,
+            ),
+          );
+        },
+        style: ElevatedButton.styleFrom(
+          backgroundColor: Theme.of(context).primaryColor,
+          foregroundColor: Colors.white,
+        ),
+        child: Text(
+          course.price > 0 ? 'Enroll - \$${course.price.toStringAsFixed(2)}' : 'Enroll for Free',
+          style: const TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.bold,
           ),
         ),
       ),
