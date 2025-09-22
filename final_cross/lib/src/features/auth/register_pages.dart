@@ -68,8 +68,8 @@ class _RegisterPageState extends State<RegisterPage> {
       }
 
       // Normal success path
-      if (credential?.user != null) {
-        await _handleSuccessfulRegistration(credential!.user!);
+      if (credential.user != null) {
+        await _handleSuccessfulRegistration(credential.user!);
       }
     } on FirebaseAuthException catch (e) {
       if (mounted) {

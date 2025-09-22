@@ -98,7 +98,7 @@ class _LoginPageState extends State<LoginPage> {
       }
 
       // Normal success path
-      if (credential?.user != null && mounted) {
+      if (credential.user != null && mounted) {
         if (mounted) {
           setState(() => error = null);
         }

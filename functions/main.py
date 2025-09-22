@@ -1,3 +1,15 @@
+import sys
+import os
+
+# Add UTF-8 encoding fixes at the top, before other imports
+if sys.stdout.encoding != 'utf-8':
+    sys.stdout.reconfigure(encoding='utf-8')
+if sys.stderr.encoding != 'utf-8':
+    sys.stderr.reconfigure(encoding='utf-8')
+
+# Set default encoding environment variable
+os.environ['PYTHONIOENCODING'] = 'utf-8'
+
 from firebase_functions import https_fn, options
 from firebase_admin import initialize_app, credentials
 from flask import Flask, request, jsonify
@@ -24,8 +36,14 @@ from routes.enrollments import enrollments_bp
 app = Flask(__name__)
 app.url_map.strict_slashes = False
 
-# Configure CORS
+# Configure CORS with UTF-8 support
 CORS(app, origins=["*"], supports_credentials=True)
+
+# Add UTF-8 response headers globally
+@app.after_request
+def after_request(response):
+    response.headers['Content-Type'] = 'application/json; charset=utf-8'
+    return response
 
 # Register blueprints (route modules)
 app.register_blueprint(auth_bp, url_prefix='/auth')
