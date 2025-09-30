@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 import '../../data/models/course.dart';
 import '../../data/repositories/course_repository.dart';
 
@@ -13,12 +16,137 @@ class CourseDetailPage extends StatefulWidget {
 class _CourseDetailPageState extends State<CourseDetailPage> {
   final CourseRepository _repository = CourseRepository();
   Future<Course?>? _courseDetailFuture;
+  bool isEnrolled = false;
+  bool isEnrolling = false;
+  Map<String, dynamic>? enrollmentData;
   
   @override
   void initState() {
     super.initState();
     // Fetch detailed course data including lessons array
     _courseDetailFuture = _repository.getCourseById(widget.course.id);
+    _checkEnrollmentStatus();
+  }
+
+  Future<void> _checkEnrollmentStatus() async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) return;
+
+    try {
+      final idToken = await user.getIdToken();
+      final response = await http.get(
+        Uri.parse('http://127.0.0.1:5001/elearning-5ac35/us-central1/api/enrollments/check/${widget.course.id}'),
+        headers: {
+          'Authorization': 'Bearer $idToken',
+          'Content-Type': 'application/json',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        if (mounted) {
+          setState(() {
+            isEnrolled = data['enrolled'] ?? false;
+            enrollmentData = data['enrollment'];
+          });
+        }
+      }
+    } catch (e) {
+      print('Error checking enrollment status: $e');
+    }
+  }
+
+  Future<void> _enrollInCourse() async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please log in to enroll in courses')),
+      );
+      return;
+    }
+
+    setState(() {
+      isEnrolling = true;
+    });
+
+    try {
+      final idToken = await user.getIdToken();
+      final response = await http.post(
+        Uri.parse('http://127.0.0.1:5001/elearning-5ac35/us-central1/api/enrollments/enroll'),
+        headers: {
+          'Authorization': 'Bearer $idToken',
+          'Content-Type': 'application/json',
+        },
+        body: json.encode({
+          'course_id': widget.course.id,
+        }),
+      );
+
+      final data = json.decode(response.body);
+
+      if (response.statusCode == 201) {
+        if (mounted) {
+          setState(() {
+            isEnrolled = true;
+            enrollmentData = data['enrollment'];
+          });
+
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(data['message'] ?? 'Successfully enrolled!'),
+              backgroundColor: Colors.green,
+              duration: const Duration(seconds: 2),
+              behavior: SnackBarBehavior.floating,
+            ),
+          );
+          
+          // Refresh enrollment status to ensure UI is consistent
+          Future.delayed(const Duration(milliseconds: 500), () {
+            _checkEnrollmentStatus();
+          });
+        }
+      } else if (response.statusCode == 400 && data['error']?.contains('Already enrolled') == true) {
+        // Handle already enrolled case
+        if (mounted) {
+          setState(() {
+            isEnrolled = true;
+            enrollmentData = data['enrollment'];
+          });
+
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: const Text('You are already enrolled in this course!'),
+              backgroundColor: Colors.orange,
+              duration: const Duration(seconds: 2),
+            ),
+          );
+        }
+      } else {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(data['error'] ?? 'Failed to enroll'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          isEnrolling = false;
+        });
+      }
+    }
   }
 
   @override
@@ -271,30 +399,129 @@ class _CourseDetailPageState extends State<CourseDetailPage> {
   }
 
   Widget _buildEnrollButton(Course course) {
+    if (isEnrolled) {
+      return Column(
+        children: [
+          // Enrolled Status Button
+          Container(
+            width: double.infinity,
+            height: 48,
+            decoration: BoxDecoration(
+              color: Colors.green.shade50,
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(color: Colors.green.shade300, width: 2),
+            ),
+            child: Center(
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(Icons.check_circle, color: Colors.green.shade600, size: 24),
+                  const SizedBox(width: 8),
+                  Text(
+                    'Successfully Enrolled',
+                    style: TextStyle(
+                      color: Colors.green.shade700,
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(height: 12),
+          
+          // Continue Learning Button
+          SizedBox(
+            width: double.infinity,
+            height: 48,
+            child: ElevatedButton(
+              onPressed: () {
+                // Navigate to course content/lessons
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text('Opening ${course.title} lessons...'),
+                    backgroundColor: Colors.blue,
+                    duration: const Duration(seconds: 2),
+                  ),
+                );
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.blue.shade600,
+                foregroundColor: Colors.white,
+                elevation: 2,
+              ),
+              child: const Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(Icons.play_arrow, size: 20),
+                  SizedBox(width: 8),
+                  Text(
+                    'Continue Learning',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      );
+    }
+
+    // Not enrolled - show enroll button
     return SizedBox(
       width: double.infinity,
       height: 48,
       child: ElevatedButton(
-        onPressed: () {
-          // TODO: Implement enrollment logic
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text('Enrolled in ${course.title}!'),
-              backgroundColor: Colors.green,
-            ),
-          );
-        },
+        onPressed: isEnrolling ? null : _enrollInCourse,
         style: ElevatedButton.styleFrom(
-          backgroundColor: Theme.of(context).primaryColor,
+          backgroundColor: isEnrolling 
+              ? Colors.grey.shade400 
+              : Theme.of(context).primaryColor,
           foregroundColor: Colors.white,
+          elevation: isEnrolling ? 0 : 2,
         ),
-        child: Text(
-          course.price > 0 ? 'Enroll - \$${course.price.toStringAsFixed(2)}' : 'Enroll for Free',
-          style: const TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
+        child: isEnrolling
+            ? Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const SizedBox(
+                    height: 20,
+                    width: 20,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      color: Colors.white,
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Text(
+                    'Enrolling...',
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ],
+              )
+            : Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Icon(Icons.school, size: 20),
+                  const SizedBox(width: 8),
+                  Text(
+                    course.price > 0 
+                        ? 'Enroll - \$${course.price.toStringAsFixed(2)}' 
+                        : 'Enroll for Free',
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ],
+              ),
       ),
     );
   }

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:http/http.dart' as http;
 import 'dart:convert';
 
 class ProfilePage extends StatefulWidget {
@@ -14,33 +14,91 @@ class _ProfilePageState extends State<ProfilePage> {
   final User? user = FirebaseAuth.instance.currentUser;
   Map<String, dynamic>? userData;
   bool isLoading = true;
+  String? errorMessage;
 
   @override
   void initState() {
     super.initState();
-    _loadUserData();
+    _loadUserProfile();
   }
 
-  Future<void> _loadUserData() async {
+  Future<void> _loadUserProfile() async {
+    if (user == null) {
+      setState(() {
+        isLoading = false;
+        errorMessage = 'No user logged in';
+      });
+      return;
+    }
+
     try {
-      final prefs = await SharedPreferences.getInstance();
-      final userDataString = prefs.getString('user_data');
+      setState(() {
+        isLoading = true;
+        errorMessage = null;
+      });
+
+      // Get Firebase ID token
+      final idToken = await user!.getIdToken();
       
-      if (userDataString != null) {
+      // Make API call to get profile
+      final response = await http.get(
+        Uri.parse('http://127.0.0.1:5001/elearning-5ac35/us-central1/api/auth/profile'),
+        headers: {
+          'Authorization': 'Bearer $idToken',
+          'Content-Type': 'application/json',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
         setState(() {
-          userData = json.decode(userDataString);
+          userData = data['user'];
           isLoading = false;
         });
       } else {
-        setState(() {
-          isLoading = false;
-        });
+        throw Exception('Failed to load profile: ${response.statusCode}');
       }
     } catch (e) {
-      print('Error loading user data: $e');
+      print('Error loading user profile: $e');
       setState(() {
+        errorMessage = e.toString();
         isLoading = false;
       });
+    }
+  }
+
+  Future<void> _updateProfile(Map<String, dynamic> updates) async {
+    if (user == null) return;
+
+    try {
+      final idToken = await user!.getIdToken();
+      
+      final response = await http.put(
+        Uri.parse('http://127.0.0.1:5001/elearning-5ac35/us-central1/api/auth/profile'),
+        headers: {
+          'Authorization': 'Bearer $idToken',
+          'Content-Type': 'application/json',
+        },
+        body: json.encode(updates),
+      );
+
+      if (response.statusCode == 200) {
+        // Reload profile data
+        await _loadUserProfile();
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Profile updated successfully')),
+          );
+        }
+      } else {
+        throw Exception('Failed to update profile');
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error updating profile: $e')),
+        );
+      }
     }
   }
 
@@ -49,144 +107,99 @@ class _ProfilePageState extends State<ProfilePage> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Profile'),
-        backgroundColor: Theme.of(context).primaryColor,
-        foregroundColor: Colors.white,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.refresh),
+            onPressed: _loadUserProfile,
+          ),
+        ],
       ),
-      body: isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : SingleChildScrollView(
-              padding: const EdgeInsets.all(16.0),
-              child: Column(
-                children: [
-                  // Profile Picture
-                  CircleAvatar(
-                    radius: 60,
-                    backgroundColor: Theme.of(context).primaryColor,
-                    backgroundImage: user?.photoURL != null
-                        ? NetworkImage(user!.photoURL!)
-                        : null,
-                    child: user?.photoURL == null
-                        ? Text(
-                            user?.displayName?.substring(0, 1).toUpperCase() ??
-                                user?.email?.substring(0, 1).toUpperCase() ??
-                                'U',
-                            style: const TextStyle(
-                              fontSize: 36,
-                              color: Colors.white,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          )
-                        : null,
-                  ),
-                  const SizedBox(height: 24),
-                  
-                  // User Information Cards
-                  _buildInfoCard(
-                    icon: Icons.person,
-                    title: 'Display Name',
-                    value: user?.displayName ?? 'Not set',
-                  ),
-                  const SizedBox(height: 16),
-                  
-                  _buildInfoCard(
-                    icon: Icons.email,
-                    title: 'Email',
-                    value: user?.email ?? 'Not available',
-                  ),
-                  const SizedBox(height: 16),
-                  
-                  _buildInfoCard(
-                    icon: Icons.verified_user,
-                    title: 'Email Verified',
-                    value: user?.emailVerified == true ? 'Yes' : 'No',
-                  ),
-                  const SizedBox(height: 16),
-                  
-                  _buildInfoCard(
-                    icon: Icons.access_time,
-                    title: 'Account Created',
-                    value: user?.metadata.creationTime != null
-                        ? _formatDate(user!.metadata.creationTime!)
-                        : 'Not available',
-                  ),
-                  const SizedBox(height: 16),
-                  
-                  _buildInfoCard(
-                    icon: Icons.login,
-                    title: 'Last Sign In',
-                    value: user?.metadata.lastSignInTime != null
-                        ? _formatDate(user!.metadata.lastSignInTime!)
-                        : 'Not available',
-                  ),
-                  
-                  if (userData != null) ...[
-                    const SizedBox(height: 24),
-                    const Divider(),
-                    const SizedBox(height: 16),
-                    
-                    // Additional user data from backend
-                    if (userData!['role'] != null)
-                      _buildInfoCard(
-                        icon: Icons.admin_panel_settings,
-                        title: 'Role',
-                        value: userData!['role'],
-                      ),
-                  ],
-                  
-                  const SizedBox(height: 32),
-                  
-                  // Action Buttons
-                  SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton.icon(
-                      onPressed: _sendEmailVerification,
-                      icon: const Icon(Icons.mark_email_read),
-                      label: const Text('Resend Email Verification'),
-                      style: ElevatedButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(vertical: 12),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
+      body: _buildBody(),
     );
   }
 
-  Widget _buildInfoCard({
-    required IconData icon,
-    required String title,
-    required String value,
-  }) {
-    return Card(
-      elevation: 2,
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Row(
+  Widget _buildBody() {
+    if (isLoading) {
+      return const Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(
-              icon,
-              color: Theme.of(context).primaryColor,
-              size: 24,
+            CircularProgressIndicator(),
+            SizedBox(height: 16),
+            Text('Loading profile...'),
+          ],
+        ),
+      );
+    }
+
+    if (errorMessage != null) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(Icons.error, size: 64, color: Colors.red),
+            const SizedBox(height: 16),
+            Text('Error: $errorMessage'),
+            const SizedBox(height: 16),
+            ElevatedButton(
+              onPressed: _loadUserProfile,
+              child: const Text('Retry'),
             ),
-            const SizedBox(width: 16),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    title,
-                    style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                          color: Colors.grey[600],
-                        ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    value,
-                    style: Theme.of(context).textTheme.bodyLarge,
-                  ),
-                ],
+          ],
+        ),
+      );
+    }
+
+    if (userData == null) {
+      return const Center(child: Text('No profile data available'));
+    }
+
+    return RefreshIndicator(
+      onRefresh: _loadUserProfile,
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          children: [
+            // Profile Picture
+            CircleAvatar(
+              radius: 50,
+              backgroundImage: userData!['profile_picture_url'] != null
+                  ? NetworkImage(userData!['profile_picture_url'])
+                  : null,
+              child: userData!['profile_picture_url'] == null
+                  ? Text(
+                      userData!['display_name']?.isNotEmpty == true
+                          ? userData!['display_name'][0].toUpperCase()
+                          : 'U',
+                      style: const TextStyle(fontSize: 32),
+                    )
+                  : null,
+            ),
+            const SizedBox(height: 16),
+            
+            // Profile Information
+            Card(
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  children: [
+                    _buildProfileField('Name', userData!['display_name'] ?? 'Not set'),
+                    _buildProfileField('Email', userData!['email'] ?? ''),
+                    _buildProfileField('Phone', userData!['phone'] ?? 'Not set'),
+                    _buildProfileField('Bio', userData!['bio'] ?? 'Not set'),
+                    _buildProfileField('Role', userData!['role'] ?? 'Student'),
+                    _buildProfileField('Enrollments', userData!['enrollment_count']?.toString() ?? '0'),
+                  ],
+                ),
               ),
+            ),
+            
+            const SizedBox(height: 16),
+            
+            // Edit Profile Button
+            ElevatedButton(
+              onPressed: () => _showEditDialog(),
+              child: const Text('Edit Profile'),
             ),
           ],
         ),
@@ -194,41 +207,71 @@ class _ProfilePageState extends State<ProfilePage> {
     );
   }
 
-  String _formatDate(DateTime date) {
-    return '${date.day}/${date.month}/${date.year} at ${date.hour}:${date.minute.toString().padLeft(2, '0')}';
+  Widget _buildProfileField(String label, String value) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          SizedBox(
+            width: 100,
+            child: Text(
+              label,
+              style: const TextStyle(fontWeight: FontWeight.bold),
+            ),
+          ),
+          Expanded(child: Text(value)),
+        ],
+      ),
+    );
   }
 
-  Future<void> _sendEmailVerification() async {
-    try {
-      if (user != null && !user!.emailVerified) {
-        await user!.sendEmailVerification();
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Verification email sent!'),
-              backgroundColor: Colors.green,
+  void _showEditDialog() {
+    final nameController = TextEditingController(text: userData!['display_name'] ?? '');
+    final phoneController = TextEditingController(text: userData!['phone'] ?? '');
+    final bioController = TextEditingController(text: userData!['bio'] ?? '');
+
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Edit Profile'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextField(
+              controller: nameController,
+              decoration: const InputDecoration(labelText: 'Name'),
             ),
-          );
-        }
-      } else {
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Email is already verified'),
-              backgroundColor: Colors.blue,
+            TextField(
+              controller: phoneController,
+              decoration: const InputDecoration(labelText: 'Phone'),
             ),
-          );
-        }
-      }
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Error: $e'),
-            backgroundColor: Colors.red,
+            TextField(
+              controller: bioController,
+              decoration: const InputDecoration(labelText: 'Bio'),
+              maxLines: 3,
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
           ),
-        );
-      }
-    }
+          ElevatedButton(
+            onPressed: () {
+              final updates = {
+                'display_name': nameController.text.trim(),
+                'phone': phoneController.text.trim(),
+                'bio': bioController.text.trim(),
+              };
+              Navigator.pop(context);
+              _updateProfile(updates);
+            },
+            child: const Text('Save'),
+          ),
+        ],
+      ),
+    );
   }
 }

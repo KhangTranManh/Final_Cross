@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
+import 'package:http/http.dart' as http;
 
 class RegisterPage extends StatefulWidget {
   const RegisterPage({super.key});
@@ -13,6 +14,8 @@ class RegisterPage extends StatefulWidget {
 class _RegisterPageState extends State<RegisterPage> {
   final emailCtrl = TextEditingController();
   final passCtrl = TextEditingController();
+  final nameCtrl = TextEditingController();
+  final phoneCtrl = TextEditingController();
   bool loading = false;
   String? error;
   final FirebaseAuth _auth = FirebaseAuth.instance;
@@ -104,8 +107,47 @@ class _RegisterPageState extends State<RegisterPage> {
     }
   }
 
+  Future<void> _createUserProfile(User user) async {
+    try {
+      final idToken = await user.getIdToken();
+      
+      final response = await http.post(
+        Uri.parse('http://127.0.0.1:5001/elearning-5ac35/us-central1/api/auth/register'),
+        headers: {
+          'Authorization': 'Bearer $idToken',
+          'Content-Type': 'application/json',
+        },
+        body: json.encode({
+          'email': user.email,
+          'display_name': nameCtrl.text.trim().isNotEmpty ? nameCtrl.text.trim() : null,
+          'phone': phoneCtrl.text.trim().isNotEmpty ? phoneCtrl.text.trim() : null,
+          'bio': null, // Can be added later in profile
+        }),
+      );
+
+      if (response.statusCode == 201) {
+        if (kDebugMode) {
+          print('User profile created successfully');
+        }
+      } else {
+        if (kDebugMode) {
+          print('Failed to create user profile: ${response.statusCode}');
+          print('Response: ${response.body}');
+        }
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        print('Error creating user profile: $e');
+      }
+      // Don't fail registration if profile creation fails
+    }
+  }
+
   Future<void> _handleSuccessfulRegistration(User user) async {
     try {
+      // Create detailed user profile in Firestore
+      await _createUserProfile(user);
+      
       // Only send email verification on mobile platforms
       if (!kIsWeb) {
         await user.sendEmailVerification();
@@ -122,7 +164,7 @@ class _RegisterPageState extends State<RegisterPage> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(kIsWeb 
-            ? 'Registration successful!' 
+            ? 'Registration successful! Profile created.' 
             : 'Registration successful! Please check your email for verification.'),
           duration: const Duration(seconds: 3),
           backgroundColor: Colors.green,
@@ -142,6 +184,8 @@ class _RegisterPageState extends State<RegisterPage> {
   void dispose() {
     emailCtrl.dispose();
     passCtrl.dispose();
+    nameCtrl.dispose();
+    phoneCtrl.dispose();
     super.dispose();
   }
 
@@ -160,7 +204,7 @@ class _RegisterPageState extends State<RegisterPage> {
                 controller: emailCtrl,
                 keyboardType: TextInputType.emailAddress,
                 decoration: const InputDecoration(
-                  labelText: "Email",
+                  labelText: "Email *",
                   border: OutlineInputBorder(),
                   prefixIcon: Icon(Icons.email_outlined),
                 ),
@@ -173,10 +217,37 @@ class _RegisterPageState extends State<RegisterPage> {
                 controller: passCtrl,
                 obscureText: true,
                 decoration: const InputDecoration(
-                  labelText: "Password",
+                  labelText: "Password *",
                   border: OutlineInputBorder(),
                   prefixIcon: Icon(Icons.lock_outlined),
                   helperText: "At least 6 characters",
+                ),
+                enabled: !loading,
+                textInputAction: TextInputAction.next,
+              ),
+              const SizedBox(height: 16),
+              
+              TextField(
+                controller: nameCtrl,
+                decoration: const InputDecoration(
+                  labelText: "Full Name (Optional)",
+                  border: OutlineInputBorder(),
+                  prefixIcon: Icon(Icons.person_outlined),
+                  helperText: "This will be displayed in your profile",
+                ),
+                enabled: !loading,
+                textInputAction: TextInputAction.next,
+              ),
+              const SizedBox(height: 16),
+              
+              TextField(
+                controller: phoneCtrl,
+                keyboardType: TextInputType.phone,
+                decoration: const InputDecoration(
+                  labelText: "Phone Number (Optional)",
+                  border: OutlineInputBorder(),
+                  prefixIcon: Icon(Icons.phone_outlined),
+                  helperText: "For course updates and notifications",
                 ),
                 enabled: !loading,
                 textInputAction: TextInputAction.done,

@@ -1,87 +1,65 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'profile_page.dart';
 
 class UserMenu extends StatelessWidget {
-  final VoidCallback onLogout;
-  
-  const UserMenu({
-    super.key,
-    required this.onLogout,
-  });
+  final VoidCallback? onLogout;
 
-  Future<void> _logout(BuildContext context) async {
-    try {
-      // Sign out from Firebase Auth
-      await FirebaseAuth.instance.signOut();
-      
-      // Clear stored token and user data
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.remove('auth_token');
-      await prefs.remove('user_data');
-      
-      // Call logout callback
-      onLogout();
-      
-      // Navigate to login
-      if (context.mounted) {
-        Navigator.pushNamedAndRemoveUntil(
-          context, 
-          '/login', 
-          (route) => false,
-        );
-      }
-    } catch (e) {
-      print('Logout error: $e');
-      // Still navigate to login even if there's an error
-      if (context.mounted) {
-        Navigator.pushNamedAndRemoveUntil(
-          context, 
-          '/login', 
-          (route) => false,
-        );
-      }
-    }
-  }
-
-  void _showProfile(BuildContext context) {
-    // Navigate to profile page or show profile dialog
-    Navigator.pushNamed(context, '/profile');
-  }
+  const UserMenu({super.key, this.onLogout});
 
   @override
   Widget build(BuildContext context) {
+    final user = FirebaseAuth.instance.currentUser;
+
     return PopupMenuButton<String>(
-      icon: const Icon(
-        Icons.settings,
-        size: 28,
+      icon: CircleAvatar(
+        radius: 16,
+        child: Text(
+          user?.displayName?.isNotEmpty == true
+              ? user!.displayName![0].toUpperCase()
+              : user?.email?.isNotEmpty == true
+                  ? user!.email![0].toUpperCase()
+                  : 'U',
+          style: const TextStyle(fontSize: 12),
+        ),
       ),
-      offset: const Offset(0, 45),
-      onSelected: (value) {
+      onSelected: (value) async {
         switch (value) {
           case 'profile':
-            _showProfile(context);
+            // Use MaterialPageRoute instead of named route
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => const ProfilePage(),
+              ),
+            );
             break;
           case 'logout':
-            _logout(context);
+            await FirebaseAuth.instance.signOut();
+            if (onLogout != null) onLogout!();
             break;
         }
       },
-      itemBuilder: (BuildContext context) => [
-        const PopupMenuItem<String>(
+      itemBuilder: (context) => [
+        PopupMenuItem(
           value: 'profile',
-          child: ListTile(
-            leading: Icon(Icons.person),
-            title: Text('Profile'),
-            contentPadding: EdgeInsets.zero,
+          child: Row(
+            children: [
+              const Icon(Icons.person),
+              const SizedBox(width: 8),
+              Text(user?.displayName ?? user?.email ?? 'User'),
+            ],
           ),
         ),
-        const PopupMenuItem<String>(
+        const PopupMenuDivider(),
+        const PopupMenuItem(
           value: 'logout',
-          child: ListTile(
-            leading: Icon(Icons.logout),
-            title: Text('Logout'),
-            contentPadding: EdgeInsets.zero,
+          child: Row(
+            children: [
+              Icon(Icons.logout),
+              SizedBox(width: 8),
+              Text('Logout'),
+            ],
           ),
         ),
       ],

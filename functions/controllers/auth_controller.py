@@ -1,6 +1,7 @@
 from firebase_admin import auth, firestore
 from flask import request, jsonify
 import functools
+from datetime import datetime
 
 def get_db():
     """Get Firestore client instance"""
@@ -24,38 +25,70 @@ def verify_token(f):
     
     return decorated_function
 
+def create_user_profile(uid, email, display_name=None, additional_data=None):
+    """Create user profile in Firestore using enhanced User model"""
+    try:
+        from models.user import User
+        
+        # Create User object with enhanced data
+        user = User(
+            uid=uid,
+            email=email,
+            display_name=display_name or email.split('@')[0],
+            phone=additional_data.get('phone') if additional_data else None,
+            bio=additional_data.get('bio') if additional_data else None,
+            profile_complete=additional_data.get('profile_complete', False) if additional_data else False
+        )
+        
+        # Validate and save
+        validation_errors = user.validate()
+        if validation_errors:
+            print(f'User validation errors: {validation_errors}')
+            return None
+        
+        success = user.save()
+        if success:
+            return user.to_dict()
+        else:
+            return None
+            
+    except Exception as e:
+        print(f'Error creating user profile: {e}')
+        return None
+
 def get_user_profile():
+    """Get user profile from Firestore using enhanced User model"""
     try:
         uid = request.user['uid']
+        from models.user import User
         
-        user_doc = get_db().collection('users').document(uid).get()
+        # Try to get existing user
+        user = User.get_by_id(uid)
         
-        if not user_doc.exists:
-            firebase_user = auth.get_user(uid)
-            user_data = {
-                'uid': firebase_user.uid,
-                'email': firebase_user.email,
-                'display_name': firebase_user.display_name,
-                'photo_url': firebase_user.photo_url,
-                'email_verified': firebase_user.email_verified,
-                'created_at': firebase_user.user_metadata.creation_timestamp
-            }
-            
-            get_db().collection('users').document(uid).set(user_data)
-            
-            return jsonify({
-                'success': True,
-                'user': user_data
-            })
-        
-        user_data = user_doc.to_dict()
-        return jsonify({
-            'success': True,
-            'user': user_data
-        })
+        if user:
+            return user.to_dict()
+        else:
+            # Create profile if doesn't exist (for existing Firebase Auth users)
+            user_record = auth.get_user(uid)
+            return create_user_profile(uid, user_record.email, user_record.display_name)
     except Exception as e:
-        print(f'Get profile error: {e}')
-        return jsonify({'error': 'Failed to get user profile'}), 500
+        print(f'Error getting user profile: {e}')
+        return None
+
+def update_user_profile(uid, update_data):
+    """Update user profile in Firestore using enhanced User model"""
+    try:
+        from models.user import User
+        
+        user = User.get_by_id(uid)
+        if user:
+            return user.update(update_data)
+        else:
+            print(f'User not found: {uid}')
+            return False
+    except Exception as e:
+        print(f'Error updating user profile: {e}')
+        return False
 
 def register_user():
     try:
@@ -69,13 +102,7 @@ def register_user():
             email_verified=False
         )
 
-        db = get_db()  # Get client when needed
-        db.collection('users').document(user_record.uid).set({
-            'uid': user_record.uid,
-            'email': email,
-            'email_verified': False,
-            'created_at': firestore.SERVER_TIMESTAMP
-        })
+        create_user_profile(user_record.uid, email)
 
         return jsonify({
             'success': True,
