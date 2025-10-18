@@ -23,8 +23,22 @@ service_account_path = os.path.join(current_dir, "config", "firebase-service-acc
 
 # Initialize Firebase Admin with service account - only if not already initialized
 if not firebase_admin._apps:
-    cred = credentials.Certificate(service_account_path)
-    initialize_app(cred)
+    try:
+        # Try to use service account file if it exists
+        if os.path.exists(service_account_path):
+            cred = credentials.Certificate(service_account_path)
+            initialize_app(cred)
+        else:
+            # For local development, use default credentials
+            print("Service account file not found, using default credentials for local development")
+            initialize_app()
+    except Exception as e:
+        print(f"Firebase initialization error: {e}")
+        # For local development, try to initialize without credentials
+        try:
+            initialize_app()
+        except Exception as e2:
+            print(f"Failed to initialize Firebase: {e2}")
 
 # Import your route handlers AFTER Firebase is initialized
 from routes.auth import auth_bp
@@ -123,6 +137,34 @@ def api(req):
         elif path == '/health':
             return jsonify({'status': 'healthy'})
         
+        # Route to categories
+        elif path == '/categories' or path == '/categories/':
+            if method == 'GET':
+                from firebase_admin import firestore
+                
+                try:
+                    db = firestore.client()
+                    categories_ref = db.collection('categories')
+                    docs = categories_ref.stream()
+                    
+                    categories = []
+                    for doc in docs:
+                        category_data = doc.to_dict()
+                        category_data['id'] = doc.id
+                        categories.append(category_data)
+                    
+                    return jsonify({
+                        'success': True,
+                        'data': categories,
+                        'count': len(categories)
+                    }), 200
+                    
+                except Exception as e:
+                    return jsonify({
+                        'success': False,
+                        'error': str(e)
+                    }), 500
+        
         # Route to enrollment endpoints
         elif path.startswith('/enrollments'):
             if method == 'POST' and path == '/enrollments/enroll':
@@ -203,6 +245,30 @@ def api(req):
                         'count': len(enrollment_data)
                     }), 200
                         
+                except Exception as e:
+                    return jsonify({'success': False, 'error': str(e)}), 500
+            
+            elif method == 'GET' and path == '/enrollments/all':
+                from models.enrollment import Enrollment
+                from models.course import Course
+                
+                try:
+                    enrollments = Enrollment.find_all()
+                    
+                    # Get course details for each enrollment
+                    enrollment_data = []
+                    for enrollment in enrollments:
+                        course = Course.get_by_id(enrollment.course_id)
+                        enrollment_dict = enrollment.to_dict()
+                        enrollment_dict['course'] = course.to_dict() if course else None
+                        enrollment_data.append(enrollment_dict)
+                    
+                    return jsonify({
+                        'success': True,
+                        'data': enrollment_data,
+                        'count': len(enrollment_data)
+                    }), 200
+                    
                 except Exception as e:
                     return jsonify({'success': False, 'error': str(e)}), 500
             

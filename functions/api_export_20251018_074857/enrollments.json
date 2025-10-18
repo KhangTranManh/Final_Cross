@@ -1,0 +1,317 @@
+{
+  "count": 6,
+  "data": [
+    {
+      "certificate_issued": false,
+      "completed_at": null,
+      "course": {
+        "category": "Backend Development",
+        "createdAt": "Thu, 04 Sep 2025 05:22:43 GMT",
+        "description": "Learn to integrate Firebase services in mobile applications kkfkfkff",
+        "difficulty": "Intermediate",
+        "duration": 150,
+        "id": "firebase-integration-002",
+        "instructor": "Backend Expert",
+        "isPublished": true,
+        "lessons": [
+          {
+            "description": "Setting up Firebase project and SDK",
+            "duration": 25,
+            "id": "lesson-001",
+            "order": 1,
+            "title": "Firebase Setup and change",
+            "videoUrl": "https://example.com/firebase-setup.mp4"
+          },
+          {
+            "description": "Implementing user authentication with Firebase",
+            "duration": 40,
+            "id": "lesson-002",
+            "order": 2,
+            "title": "Authentication Implementation",
+            "videoUrl": "https://example.com/firebase-auth.mp4"
+          },
+          {
+            "description": "Working with Firestore NoSQL database",
+            "duration": 35,
+            "id": "lesson-003",
+            "order": 3,
+            "title": "Firestore Database",
+            "videoUrl": "https://example.com/firestore.mp4"
+          }
+        ],
+        "price": 149.99,
+        "rating": 4.8,
+        "studentsCount": 0,
+        "thumbnail": "https://example.com/firebase-course.jpg",
+        "title": "Firebase Backend Services",
+        "updatedAt": "Thu, 04 Sep 2025 05:22:43 GMT"
+      },
+      "course_id": "firebase-integration-002",
+      "enrolled_at": "Tue, 30 Sep 2025 07:09:31 GMT",
+      "enrollment_id": "2122bf31-5078-45b8-b015-1e3fd93aceb3",
+      "progress": {
+        "completed_lessons": [],
+        "completion_percentage": 0.0,
+        "current_lesson": 0,
+        "last_accessed": null,
+        "total_time_spent": 0
+      },
+      "rating": null,
+      "review": null,
+      "reviewed_at": null,
+      "status": "active",
+      "user_id": "JUx34lUbK2e0gucX7mGMKPd1tMs1"
+    },
+    {
+      "certificate_issued": false,
+      "completed_at": null,
+      "course": {
+        "category": "Mobile Development",
+        "createdAt": "Thu, 04 Sep 2025 05:22:43 GMT",
+        "description": "Complete guide to building mobile apps with Flutter framework",
+        "difficulty": "Beginner",
+        "duration": 180,
+        "id": "flutter-basics-001",
+        "instructor": "Tech Instructor",
+        "isPublished": true,
+        "lessons": [
+          {
+            "description": "Getting started with Flutter development",
+            "duration": 30,
+            "id": "lesson-001",
+            "order": 1,
+            "title": "Introduction to Flutter",
+            "videoUrl": "https://example.com/flutter-intro.mp4"
+          },
+          {
+            "description": "Building user interfaces with Flutter widgets",
+            "duration": 45,
+            "id": "lesson-002",
+            "order": 2,
+            "title": "Widgets and UI Components",
+            "videoUrl": "https://example.com/flutter-widgets.mp4"
+          },
+          {
+            "description": "Managing app state in Flutter applications",
+            "duration": 60,
+            "id": "lesson-003",
+            "order": 3,
+            "title": "State Management",
+            "videoUrl": "https://example.com/flutter-state.mp4"
+          }
+        ],
+        "price": 99.99,
+        "rating": 4.5,
+        "studentsCount": 0,
+        "thumbnail": "https://example.com/flutter-course.jpg",
+        "title": "Flutter Development Fundamentals",
+        "updatedAt": "Thu, 04 Sep 2025 05:22:43 GMT"
+      },
+      "course_id": "flutter-basics-001",
+      "enrolled_at": "Sat, 18 Oct 2025 00:34:27 GMT",
+      "enrollment_id": "2fab54fe-7c4d-46e8-ac8e-36521a4b6ec7",
+      "progress": {
+        "completed_lessons": [],
+        "completion_percentage": 0.0,
+        "current_lesson": 0,
+        "last_accessed": null,
+        "total_time_spent": 0
+      },
+      "rating": null,
+      "review": null,
+      "reviewed_at": null,
+      "status": "active",
+      "user_id": "yfiyT8xlhaYiGjn5LGRUKMQO0ez2"
+    },
+    {
+      "certificate_issued": false,
+      "completed_at": null,
+      "course": {
+        "category": "Backend Development",
+        "createdAt": "Thu, 04 Sep 2025 05:22:43 GMT",
+        "description": "Learn to integrate Firebase services in mobile applications kkfkfkff",
+        "difficulty": "Intermediate",
+        "duration": 150,
+        "id": "firebase-integration-002",
+        "instructor": "Backend Expert",
+        "isPublished": true,
+        "lessons": [
+          {
+            "description": "Setting up Firebase project and SDK",
+            "duration": 25,
+            "id": "lesson-001",
+            "order": 1,
+            "title": "Firebase Setup and change",
+            "videoUrl": "https://example.com/firebase-setup.mp4"
+          },
+          {
+            "description": "Implementing user authentication with Firebase",
+            "duration": 40,
+            "id": "lesson-002",
+            "order": 2,
+            "title": "Authentication Implementation",
+            "videoUrl": "https://example.com/firebase-auth.mp4"
+          },
+          {
+            "description": "Working with Firestore NoSQL database",
+            "duration": 35,
+            "id": "lesson-003",
+            "order": 3,
+            "title": "Firestore Database",
+            "videoUrl": "https://example.com/firestore.mp4"
+          }
+        ],
+        "price": 149.99,
+        "rating": 4.8,
+        "studentsCount": 0,
+        "thumbnail": "https://example.com/firebase-course.jpg",
+        "title": "Firebase Backend Services",
+        "updatedAt": "Thu, 04 Sep 2025 05:22:43 GMT"
+      },
+      "course_id": "firebase-integration-002",
+      "enrolled_at": "Sat, 18 Oct 2025 00:20:02 GMT",
+      "enrollment_id": "31ddbec4-7dc9-4dde-bb56-95d3acf02b32",
+      "progress": {
+        "completed_lessons": [],
+        "completion_percentage": 0.0,
+        "current_lesson": 0,
+        "last_accessed": null,
+        "total_time_spent": 0
+      },
+      "rating": null,
+      "review": null,
+      "reviewed_at": null,
+      "status": "active",
+      "user_id": "yfiyT8xlhaYiGjn5LGRUKMQO0ez2"
+    },
+    {
+      "certificate_issued": false,
+      "completed_at": null,
+      "course": {
+        "category": "Mobile Development",
+        "createdAt": "Thu, 04 Sep 2025 05:22:43 GMT",
+        "description": "Complete guide to building mobile apps with Flutter framework",
+        "difficulty": "Beginner",
+        "duration": 180,
+        "id": "flutter-basics-001",
+        "instructor": "Tech Instructor",
+        "isPublished": true,
+        "lessons": [
+          {
+            "description": "Getting started with Flutter development",
+            "duration": 30,
+            "id": "lesson-001",
+            "order": 1,
+            "title": "Introduction to Flutter",
+            "videoUrl": "https://example.com/flutter-intro.mp4"
+          },
+          {
+            "description": "Building user interfaces with Flutter widgets",
+            "duration": 45,
+            "id": "lesson-002",
+            "order": 2,
+            "title": "Widgets and UI Components",
+            "videoUrl": "https://example.com/flutter-widgets.mp4"
+          },
+          {
+            "description": "Managing app state in Flutter applications",
+            "duration": 60,
+            "id": "lesson-003",
+            "order": 3,
+            "title": "State Management",
+            "videoUrl": "https://example.com/flutter-state.mp4"
+          }
+        ],
+        "price": 99.99,
+        "rating": 4.5,
+        "studentsCount": 0,
+        "thumbnail": "https://example.com/flutter-course.jpg",
+        "title": "Flutter Development Fundamentals",
+        "updatedAt": "Thu, 04 Sep 2025 05:22:43 GMT"
+      },
+      "course_id": "flutter-basics-001",
+      "enrolled_at": "Tue, 30 Sep 2025 07:09:44 GMT",
+      "enrollment_id": "b61d0a63-dcf8-4784-94f1-113c0d538a0b",
+      "progress": {
+        "completed_lessons": [],
+        "completion_percentage": 0.0,
+        "current_lesson": 0,
+        "last_accessed": null,
+        "total_time_spent": 0
+      },
+      "rating": null,
+      "review": null,
+      "reviewed_at": null,
+      "status": "active",
+      "user_id": "JUx34lUbK2e0gucX7mGMKPd1tMs1"
+    },
+    {
+      "certificate_issued": false,
+      "completed_at": null,
+      "course": null,
+      "course_id": null,
+      "enrolled_at": "Sat, 18 Oct 2025 00:48:59 GMT",
+      "enrollment_id": "enrollment-sample-001",
+      "progress": 0,
+      "rating": null,
+      "review": null,
+      "reviewed_at": null,
+      "status": "active",
+      "user_id": null
+    },
+    {
+      "certificate_issued": false,
+      "completed_at": null,
+      "course": {
+        "category": "Mobile Development",
+        "createdAt": "Thu, 04 Sep 2025 05:22:43 GMT",
+        "description": "Build iOS and Android apps with React Native",
+        "difficulty": "Intermediate",
+        "duration": 200,
+        "id": "react-native-003",
+        "instructor": "Mobile Expert",
+        "isPublished": true,
+        "lessons": [
+          {
+            "description": "Core concepts of React Native development",
+            "duration": 45,
+            "id": "lesson-001",
+            "order": 1,
+            "title": "React Native Fundamentals",
+            "videoUrl": "https://example.com/rn-fundamentals.mp4"
+          },
+          {
+            "description": "Implementing navigation in React Native apps",
+            "duration": 35,
+            "id": "lesson-002",
+            "order": 2,
+            "title": "Navigation and Routing",
+            "videoUrl": "https://example.com/rn-navigation.mp4"
+          }
+        ],
+        "price": 179.99,
+        "rating": 4.6,
+        "studentsCount": 0,
+        "thumbnail": "https://example.com/react-native-course.jpg",
+        "title": "React Native Cross-Platform Development",
+        "updatedAt": "Thu, 04 Sep 2025 05:22:43 GMT"
+      },
+      "course_id": "react-native-003",
+      "enrolled_at": "Tue, 30 Sep 2025 07:13:32 GMT",
+      "enrollment_id": "fc0b1fa5-0ffc-44d4-8699-35af481102c0",
+      "progress": {
+        "completed_lessons": [],
+        "completion_percentage": 0.0,
+        "current_lesson": 0,
+        "last_accessed": null,
+        "total_time_spent": 0
+      },
+      "rating": null,
+      "review": null,
+      "reviewed_at": null,
+      "status": "active",
+      "user_id": "JUx34lUbK2e0gucX7mGMKPd1tMs1"
+    }
+  ],
+  "success": true
+}

@@ -1,0 +1,15 @@
+{
+  "export_timestamp": "2025-10-18T07:49:00.720107",
+  "export_method": "API",
+  "api_url": "http://127.0.0.1:5001/elearning-5ac35/us-central1/api",
+  "output_directory": "api_export_20251018_074857",
+  "total_collections": 4,
+  "successful_exports": 3,
+  "total_documents": 11,
+  "collections_exported": [
+    "courses",
+    "categories",
+    "enrollments",
+    "auth"
+  ]
+}

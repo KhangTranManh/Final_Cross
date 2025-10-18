@@ -1,8 +1,13 @@
 from firebase_admin import firestore
 from datetime import datetime
 
-# Now we can initialize directly since Firebase is initialized in main.py
-db = firestore.client()
+# Initialize database client lazily
+def get_db():
+    try:
+        return firestore.client()
+    except Exception as e:
+        print(f"Error getting Firestore client: {e}")
+        return None
 
 class Course:
     def __init__(self, data=None):
@@ -22,6 +27,9 @@ class Course:
         self.isPublished = self.data.get('isPublished', True)
     
     def save(self):
+        db = get_db()
+        if not db:
+            return None
         doc_ref = db.collection('courses').document()
         doc_ref.set(self.data)
         self.data['id'] = doc_ref.id
@@ -31,6 +39,9 @@ class Course:
     @classmethod
     def find_all(cls, filters=None):
         """Find all courses with optional filters"""
+        db = get_db()
+        if not db:
+            return []
         collection_ref = db.collection('courses')
         
         if filters:
@@ -49,6 +60,9 @@ class Course:
     
     @classmethod
     def get_by_id(cls, course_id):
+        db = get_db()
+        if not db:
+            return None
         doc_ref = db.collection('courses').document(course_id)
         doc = doc_ref.get()
         if doc.exists:

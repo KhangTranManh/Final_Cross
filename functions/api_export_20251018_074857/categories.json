@@ -1,0 +1,22 @@
+{
+  "count": 2,
+  "data": [
+    {
+      "coursesCount": 1,
+      "createdAt": "Thu, 04 Sep 2025 05:22:43 GMT",
+      "description": "Server-side and cloud development",
+      "icon": "server",
+      "id": "backend-development",
+      "name": "Backend Development"
+    },
+    {
+      "coursesCount": 2,
+      "createdAt": "Thu, 04 Sep 2025 05:22:43 GMT",
+      "description": "Mobile app development courses",
+      "icon": "mobile",
+      "id": "mobile-development",
+      "name": "Mobile Development"
+    }
+  ],
+  "success": true
+}

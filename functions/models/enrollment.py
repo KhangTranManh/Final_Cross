@@ -51,6 +51,30 @@ class Enrollment:
         }
 
     @classmethod
+    def find_all(cls, filters=None):
+        """Find all enrollments with optional filters"""
+        try:
+            db = firestore.client()
+            collection_ref = db.collection('enrollments')
+            
+            if filters:
+                for key, value in filters.items():
+                    collection_ref = collection_ref.where(key, '==', value)
+            
+            docs = collection_ref.stream()
+            enrollments = []
+            
+            for doc in docs:
+                enrollment_data = doc.to_dict()
+                enrollment_data['enrollment_id'] = doc.id
+                enrollments.append(cls.from_dict(enrollment_data))
+                
+            return enrollments
+        except Exception as e:
+            print(f'Error finding enrollments: {e}')
+            return []
+
+    @classmethod
     def create_enrollment(cls, user_id, course_id):
         """Create new enrollment"""
         try:

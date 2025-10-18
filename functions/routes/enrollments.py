@@ -6,6 +6,33 @@ from models.course import Course
 
 enrollments_bp = Blueprint('enrollments', __name__)
 
+@enrollments_bp.route('/all', methods=['GET'])
+def get_all_enrollments():
+    """Get all enrollments (admin endpoint for export)"""
+    try:
+        enrollments = Enrollment.find_all()
+        
+        # Get course details for each enrollment
+        enrollment_data = []
+        for enrollment in enrollments:
+            course = Course.get_by_id(enrollment.course_id)
+            enrollment_dict = enrollment.to_dict()
+            enrollment_dict['course'] = course.to_dict() if course else None
+            enrollment_data.append(enrollment_dict)
+        
+        return jsonify({
+            'success': True,
+            'data': enrollment_data,
+            'count': len(enrollment_data)
+        }), 200
+        
+    except Exception as e:
+        print(f'Error getting all enrollments: {e}')
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 500
+
 @enrollments_bp.route('/', methods=['GET'])
 @verify_token
 def get_user_enrollments():

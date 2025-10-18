@@ -6,6 +6,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../models/course.dart';
 import '../../../config/api_config.dart';
+import '../../services/firestore_service.dart';
 
 class CourseRepository {
   String? _token;
@@ -121,5 +122,26 @@ class CourseRepository {
     } catch (e) {
       throw Exception('Error fetching course: $e');
     }
+  }
+
+  // Real-time stream methods using Firestore
+  Stream<List<Course>> getCoursesStream({
+    String? category,
+    String? difficulty,
+    String? searchQuery,
+  }) {
+    return FirestoreService.getCoursesStream(
+      category: category,
+      difficulty: difficulty,
+      searchQuery: searchQuery,
+    );
+  }
+
+  Stream<Course?> getCourseStream(String courseId) {
+    return FirestoreService.getCourseStream(courseId);
+  }
+
+  Stream<List<Course>> getUserEnrolledCoursesStream(String userId) {
+    return FirestoreService.getUserEnrolledCoursesStream(userId);
   }
 }
