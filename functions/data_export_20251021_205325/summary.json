@@ -1,0 +1,14 @@
+{
+  "export_timestamp": "2025-10-21T20:53:28.208798",
+  "export_method": "Direct Firestore Export",
+  "output_directory": "data_export_20251021_205325",
+  "total_collections": 4,
+  "successful_exports": 4,
+  "total_documents": 28,
+  "collections_exported": [
+    "categories",
+    "courses",
+    "users",
+    "enrollments"
+  ]
+}

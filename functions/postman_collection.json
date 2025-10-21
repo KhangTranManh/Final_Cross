@@ -1,0 +1,319 @@
+{
+	"info": {
+		"_postman_id": "final-cross-api-collection",
+		"name": "Final Cross - E-Learning API",
+		"description": "Firebase Cloud Functions API for E-Learning Platform",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Health Check",
+			"item": [
+				{
+					"name": "Root Endpoint",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/",
+							"host": ["{{base_url}}"],
+							"path": [""]
+						},
+						"description": "Check if API is running"
+					},
+					"response": []
+				},
+				{
+					"name": "Health Status",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/health",
+							"host": ["{{base_url}}"],
+							"path": ["health"]
+						},
+						"description": "Health check endpoint"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Categories",
+			"item": [
+				{
+					"name": "Get All Categories",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/categories",
+							"host": ["{{base_url}}"],
+							"path": ["categories"]
+						},
+						"description": "Retrieve all course categories"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Courses",
+			"item": [
+				{
+					"name": "Get All Courses",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/courses",
+							"host": ["{{base_url}}"],
+							"path": ["courses"]
+						},
+						"description": "Get all published courses"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Course By ID",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/courses/:course_id",
+							"host": ["{{base_url}}"],
+							"path": ["courses", ":course_id"],
+							"variable": [
+								{
+									"key": "course_id",
+									"value": "flutter-basics-001",
+									"description": "Course ID"
+								}
+							]
+						},
+						"description": "Get specific course details by ID"
+					},
+					"response": []
+				},
+				{
+					"name": "Create Course",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}",
+								"description": "Firebase ID Token"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"title\": \"New Course Title\",\n  \"description\": \"Course description here\",\n  \"instructor\": \"Instructor Name\",\n  \"category\": \"Mobile Development\",\n  \"difficulty\": \"Beginner\",\n  \"duration\": 120,\n  \"price\": 99.99,\n  \"rating\": 0.0,\n  \"studentsCount\": 0,\n  \"thumbnail\": \"https://example.com/image.jpg\",\n  \"isPublished\": true,\n  \"lessons\": [\n    {\n      \"id\": \"lesson-001\",\n      \"order\": 1,\n      \"title\": \"Lesson 1\",\n      \"description\": \"First lesson\",\n      \"duration\": 30,\n      \"videoUrl\": \"https://example.com/video1.mp4\"\n    }\n  ]\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/courses",
+							"host": ["{{base_url}}"],
+							"path": ["courses"]
+						},
+						"description": "Create a new course (requires authentication)"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Authentication",
+			"item": [
+				{
+					"name": "Register User",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}",
+								"description": "Firebase ID Token from client SDK"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"user@example.com\",\n  \"display_name\": \"John Doe\",\n  \"phone\": \"+1234567890\",\n  \"bio\": \"Software developer and lifelong learner\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/auth/register",
+							"host": ["{{base_url}}"],
+							"path": ["auth", "register"]
+						},
+						"description": "Register new user profile (requires Firebase Auth token)"
+					},
+					"response": []
+				},
+				{
+					"name": "Get User Profile",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}",
+								"description": "Firebase ID Token"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/auth/profile",
+							"host": ["{{base_url}}"],
+							"path": ["auth", "profile"]
+						},
+						"description": "Get current user profile"
+					},
+					"response": []
+				},
+				{
+					"name": "Update User Profile",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}",
+								"description": "Firebase ID Token"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"display_name\": \"Jane Doe\",\n  \"phone\": \"+9876543210\",\n  \"bio\": \"Updated bio\",\n  \"profile_picture_url\": \"https://example.com/avatar.jpg\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/auth/profile",
+							"host": ["{{base_url}}"],
+							"path": ["auth", "profile"]
+						},
+						"description": "Update user profile information"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Enrollments",
+			"item": [
+				{
+					"name": "Enroll in Course",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}",
+								"description": "Firebase ID Token"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"course_id\": \"flutter-basics-001\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/enrollments/enroll",
+							"host": ["{{base_url}}"],
+							"path": ["enrollments", "enroll"]
+						},
+						"description": "Enroll user in a course"
+					},
+					"response": []
+				},
+				{
+					"name": "Get My Enrollments",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}",
+								"description": "Firebase ID Token"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/enrollments",
+							"host": ["{{base_url}}"],
+							"path": ["enrollments"]
+						},
+						"description": "Get all enrollments for current user"
+					},
+					"response": []
+				},
+				{
+					"name": "Get All Enrollments",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/enrollments/all",
+							"host": ["{{base_url}}"],
+							"path": ["enrollments", "all"]
+						},
+						"description": "Get all enrollments (admin)"
+					},
+					"response": []
+				},
+				{
+					"name": "Check Enrollment Status",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}",
+								"description": "Firebase ID Token"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/enrollments/check/:course_id",
+							"host": ["{{base_url}}"],
+							"path": ["enrollments", "check", ":course_id"],
+							"variable": [
+								{
+									"key": "course_id",
+									"value": "flutter-basics-001",
+									"description": "Course ID to check"
+								}
+							]
+						},
+						"description": "Check if user is enrolled in specific course"
+					},
+					"response": []
+				}
+			]
+		}
+	],
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "http://127.0.0.1:5001/elearning-5ac35/us-central1/api",
+			"type": "string",
+			"description": "Local: http://127.0.0.1:5001/elearning-5ac35/us-central1/api | Production: https://us-central1-elearning-5ac35.cloudfunctions.net/api"
+		},
+		{
+			"key": "auth_token",
+			"value": "",
+			"type": "string",
+			"description": "Get Firebase ID token from your app or Firebase Console"
+		}
+	]
+}

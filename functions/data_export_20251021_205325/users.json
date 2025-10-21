@@ -1,0 +1,106 @@
+{
+  "success": true,
+  "count": 4,
+  "data": [
+    {
+      "created_at": "Tue, 30 Sep 2025 07:09:18 GMT",
+      "uid": "JUx34lUbK2e0gucX7mGMKPd1tMs1",
+      "bio": null,
+      "preferences": {
+        "notifications": true,
+        "difficulty_preference": "beginner",
+        "email_updates": true
+      },
+      "phone": "0942119869",
+      "role": "student",
+      "display_name": "Khangkkk",
+      "profile_complete": true,
+      "profile_picture_url": null,
+      "email": "kxc@gmail.com",
+      "updated_at": "Tue, 30 Sep 2025 07:13:32 GMT",
+      "stats": {
+        "current_streak": 0,
+        "total_learning_time": 0,
+        "certificates_earned": 0,
+        "courses_completed": 0
+      },
+      "enrollment_count": 3,
+      "id": "JUx34lUbK2e0gucX7mGMKPd1tMs1"
+    },
+    {
+      "created_at": "Sat, 18 Oct 2025 00:51:27 GMT",
+      "uid": "NnxP4jcWCFXK6wmuvn3r1apifen1",
+      "bio": "",
+      "preferences": {
+        "notifications": true,
+        "difficulty_preference": "beginner",
+        "email_updates": true
+      },
+      "phone": "094888930",
+      "role": "student",
+      "display_name": "Trieu",
+      "profile_complete": false,
+      "profile_picture_url": null,
+      "email": "djjk68913@gmail.com",
+      "updated_at": "Sun, 19 Oct 2025 12:35:41 GMT",
+      "stats": {
+        "current_streak": 0,
+        "total_learning_time": 0,
+        "certificates_earned": 0,
+        "courses_completed": 0
+      },
+      "enrollment_count": 3,
+      "id": "NnxP4jcWCFXK6wmuvn3r1apifen1"
+    },
+    {
+      "created_at": "Mon, 20 Oct 2025 10:06:54 GMT",
+      "uid": "xGkn9skZ8kgtIXehhlfh15DmHZw1",
+      "bio": null,
+      "phone": null,
+      "preferences": {
+        "notifications": true,
+        "difficulty_preference": "beginner",
+        "email_updates": true
+      },
+      "role": "student",
+      "display_name": "demo",
+      "profile_picture_url": null,
+      "profile_complete": false,
+      "email": "demo1@gmail.com",
+      "updated_at": "Mon, 20 Oct 2025 10:07:28 GMT",
+      "stats": {
+        "current_streak": 0,
+        "total_learning_time": 0,
+        "certificates_earned": 0,
+        "courses_completed": 0
+      },
+      "enrollment_count": 1,
+      "id": "xGkn9skZ8kgtIXehhlfh15DmHZw1"
+    },
+    {
+      "created_at": "Tue, 30 Sep 2025 06:45:14 GMT",
+      "uid": "yfiyT8xlhaYiGjn5LGRUKMQO0ez2",
+      "bio": "",
+      "preferences": {
+        "notifications": true,
+        "difficulty_preference": "beginner",
+        "email_updates": true
+      },
+      "phone": "",
+      "role": "student",
+      "display_name": "Khang",
+      "profile_complete": false,
+      "profile_picture_url": null,
+      "email": "khangjaki12@gmail.com",
+      "updated_at": "Sun, 19 Oct 2025 10:09:00 GMT",
+      "stats": {
+        "current_streak": 0,
+        "total_learning_time": 0,
+        "certificates_earned": 0,
+        "courses_completed": 0
+      },
+      "enrollment_count": 3,
+      "id": "yfiyT8xlhaYiGjn5LGRUKMQO0ez2"
+    }
+  ]
+}

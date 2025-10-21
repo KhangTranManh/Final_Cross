@@ -1,0 +1,40 @@
+{
+  "success": true,
+  "count": 4,
+  "data": [
+    {
+      "description": "Server-side and cloud development",
+      "icon": "server",
+      "createdAt": "Thu, 04 Sep 2025 05:22:43 GMT",
+      "coursesCount": 1,
+      "name": "Backend Development",
+      "id": "backend-development"
+    },
+    {
+      "description": "Development operations and automation",
+      "id": "devops",
+      "createdAt": "Tue, 21 Oct 2025 13:51:52 GMT",
+      "icon": "tools",
+      "updatedAt": "Tue, 21 Oct 2025 13:51:52 GMT",
+      "coursesCount": 0,
+      "name": "DevOps"
+    },
+    {
+      "description": "Client-side web development",
+      "id": "frontend-development",
+      "createdAt": "Tue, 21 Oct 2025 13:51:52 GMT",
+      "icon": "web",
+      "updatedAt": "Tue, 21 Oct 2025 13:51:52 GMT",
+      "coursesCount": 0,
+      "name": "Frontend Development"
+    },
+    {
+      "description": "Mobile app development courses",
+      "icon": "mobile",
+      "createdAt": "Thu, 04 Sep 2025 05:22:43 GMT",
+      "coursesCount": 2,
+      "name": "Mobile Development",
+      "id": "mobile-development"
+    }
+  ]
+}

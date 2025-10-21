@@ -1,0 +1,424 @@
+{
+  "success": true,
+  "count": 9,
+  "data": [
+    {
+      "duration": 180,
+      "description": "Container hóa ứng dụng với Docker - Containerize applications with Docker",
+      "thumbnail": "https://example.com/docker-course.jpg",
+      "id": "docker-devops-009",
+      "instructor": "DevOps Engineer",
+      "price": 169.99,
+      "rating": 4.8,
+      "difficulty": "Intermediate",
+      "updatedAt": "Tue, 21 Oct 2025 13:51:54 GMT",
+      "isPublished": true,
+      "lessons": [
+        {
+          "title": "Docker Basics",
+          "description": "Understanding containers and images",
+          "duration": 40,
+          "id": "lesson-001",
+          "order": 1,
+          "videoUrl": "https://example.com/docker-basics.mp4"
+        },
+        {
+          "title": "Dockerfile & Images",
+          "description": "Creating custom Docker images",
+          "duration": 50,
+          "id": "lesson-002",
+          "order": 2,
+          "videoUrl": "https://example.com/dockerfile.mp4"
+        },
+        {
+          "title": "Docker Compose",
+          "description": "Multi-container applications",
+          "duration": 45,
+          "id": "lesson-003",
+          "order": 3,
+          "videoUrl": "https://example.com/docker-compose.mp4"
+        },
+        {
+          "title": "CI/CD Pipeline",
+          "description": "Automated deployment workflows",
+          "duration": 45,
+          "id": "lesson-004",
+          "order": 4,
+          "videoUrl": "https://example.com/cicd.mp4"
+        }
+      ],
+      "category": "DevOps",
+      "title": "Docker & DevOps Fundamentals",
+      "studentsCount": 0,
+      "createdAt": "Tue, 21 Oct 2025 13:51:54 GMT"
+    },
+    {
+      "duration": 150,
+      "description": "Learn to integrate Firebase services in mobile applications",
+      "thumbnail": "https://example.com/firebase-course.jpg",
+      "instructor": "Backend Expert",
+      "price": 149.99,
+      "rating": 4.8,
+      "difficulty": "Intermediate",
+      "updatedAt": "Thu, 04 Sep 2025 05:22:43 GMT",
+      "isPublished": true,
+      "lessons": [
+        {
+          "title": "Firebase Setup and change",
+          "duration": 25,
+          "description": "Setting up Firebase project and SDK",
+          "id": "lesson-001",
+          "order": 1,
+          "videoUrl": "https://example.com/firebase-setup.mp4"
+        },
+        {
+          "title": "Authentication Implementation",
+          "description": "Implementing user authentication with Firebase",
+          "duration": 40,
+          "id": "lesson-002",
+          "videoUrl": "https://example.com/firebase-auth.mp4",
+          "order": 2
+        },
+        {
+          "title": "Firestore Database",
+          "duration": 35,
+          "description": "Working with Firestore NoSQL database",
+          "id": "lesson-003",
+          "videoUrl": "https://example.com/firestore.mp4",
+          "order": 3
+        }
+      ],
+      "category": "Backend Development",
+      "title": "Firebase Backend Services",
+      "studentsCount": 0,
+      "createdAt": "Thu, 04 Sep 2025 05:22:43 GMT",
+      "id": "firebase-integration-002"
+    },
+    {
+      "description": "Complete guide to building mobile apps with Flutter framework",
+      "duration": 180,
+      "thumbnail": "https://example.com/flutter-course.jpg",
+      "instructor": "Tech Instructor",
+      "price": 99.99,
+      "rating": 4.5,
+      "difficulty": "Beginner",
+      "updatedAt": "Thu, 04 Sep 2025 05:22:43 GMT",
+      "isPublished": true,
+      "lessons": [
+        {
+          "title": "Introduction to Flutter",
+          "description": "Getting started with Flutter development",
+          "duration": 30,
+          "id": "lesson-001",
+          "videoUrl": "https://example.com/flutter-intro.mp4",
+          "order": 1
+        },
+        {
+          "title": "Widgets and UI Components",
+          "description": "Building user interfaces with Flutter widgets",
+          "duration": 45,
+          "id": "lesson-002",
+          "videoUrl": "https://example.com/flutter-widgets.mp4",
+          "order": 2
+        },
+        {
+          "title": "State Management",
+          "description": "Managing app state in Flutter applications",
+          "duration": 60,
+          "id": "lesson-003",
+          "videoUrl": "https://example.com/flutter-state.mp4",
+          "order": 3
+        }
+      ],
+      "category": "Mobile Development",
+      "title": "Flutter Development Fundamentals",
+      "studentsCount": 0,
+      "createdAt": "Thu, 04 Sep 2025 05:22:43 GMT",
+      "id": "flutter-basics-001"
+    },
+    {
+      "duration": 230,
+      "description": "Xây dựng ứng dụng Android hiện đại với Kotlin - Modern Android development with Kotlin",
+      "thumbnail": "https://example.com/kotlin-course.jpg",
+      "id": "kotlin-android-007",
+      "instructor": "Android Developer",
+      "price": 219.99,
+      "rating": 4.7,
+      "difficulty": "Intermediate",
+      "updatedAt": "Tue, 21 Oct 2025 13:51:53 GMT",
+      "isPublished": true,
+      "lessons": [
+        {
+          "title": "Kotlin Fundamentals",
+          "description": "Learn Kotlin programming language",
+          "duration": 50,
+          "id": "lesson-001",
+          "order": 1,
+          "videoUrl": "https://example.com/kotlin-basics.mp4"
+        },
+        {
+          "title": "Android Activities & Fragments",
+          "description": "Building Android UI components",
+          "duration": 60,
+          "id": "lesson-002",
+          "order": 2,
+          "videoUrl": "https://example.com/android-ui.mp4"
+        },
+        {
+          "title": "Jetpack Compose",
+          "description": "Modern declarative UI toolkit",
+          "duration": 70,
+          "id": "lesson-003",
+          "order": 3,
+          "videoUrl": "https://example.com/jetpack-compose.mp4"
+        },
+        {
+          "title": "Room Database",
+          "description": "Local data persistence with Room",
+          "duration": 50,
+          "id": "lesson-004",
+          "order": 4,
+          "videoUrl": "https://example.com/room-db.mp4"
+        }
+      ],
+      "category": "Mobile Development",
+      "title": "Android Development with Kotlin",
+      "studentsCount": 0,
+      "createdAt": "Tue, 21 Oct 2025 13:51:53 GMT"
+    },
+    {
+      "duration": 200,
+      "description": "Xây dựng backend mạnh mẽ với Node.js và Express - Build robust backend with Node.js and Express",
+      "thumbnail": "https://example.com/nodejs-course.jpg",
+      "id": "nodejs-backend-004",
+      "instructor": "Full Stack Developer",
+      "price": 199.99,
+      "rating": 4.7,
+      "difficulty": "Intermediate",
+      "updatedAt": "Tue, 21 Oct 2025 13:51:52 GMT",
+      "isPublished": true,
+      "lessons": [
+        {
+          "title": "Node.js Fundamentals",
+          "description": "Introduction to Node.js and npm ecosystem",
+          "duration": 45,
+          "id": "lesson-001",
+          "order": 1,
+          "videoUrl": "https://example.com/nodejs-basics.mp4"
+        },
+        {
+          "title": "Express.js Framework",
+          "description": "Building REST APIs with Express",
+          "duration": 50,
+          "id": "lesson-002",
+          "order": 2,
+          "videoUrl": "https://example.com/express-api.mp4"
+        },
+        {
+          "title": "Database Integration",
+          "description": "MongoDB and Mongoose ODM",
+          "duration": 55,
+          "id": "lesson-003",
+          "order": 3,
+          "videoUrl": "https://example.com/mongodb.mp4"
+        },
+        {
+          "title": "Authentication & Security",
+          "description": "JWT and security best practices",
+          "duration": 50,
+          "id": "lesson-004",
+          "order": 4,
+          "videoUrl": "https://example.com/auth-security.mp4"
+        }
+      ],
+      "category": "Backend Development",
+      "title": "Node.js Backend Development",
+      "studentsCount": 0,
+      "createdAt": "Tue, 21 Oct 2025 13:51:52 GMT"
+    },
+    {
+      "duration": 220,
+      "description": "Phát triển web với Python Django framework - Web development with Python Django framework",
+      "thumbnail": "https://example.com/django-course.jpg",
+      "id": "python-django-005",
+      "instructor": "Python Expert",
+      "price": 179.99,
+      "rating": 4.6,
+      "difficulty": "Intermediate",
+      "updatedAt": "Tue, 21 Oct 2025 13:51:53 GMT",
+      "isPublished": true,
+      "lessons": [
+        {
+          "title": "Django Setup",
+          "description": "Setting up Django project structure",
+          "duration": 30,
+          "id": "lesson-001",
+          "order": 1,
+          "videoUrl": "https://example.com/django-setup.mp4"
+        },
+        {
+          "title": "Models and ORM",
+          "description": "Database models and Django ORM",
+          "duration": 60,
+          "id": "lesson-002",
+          "order": 2,
+          "videoUrl": "https://example.com/django-orm.mp4"
+        },
+        {
+          "title": "Views and Templates",
+          "description": "Building dynamic views and templates",
+          "duration": 55,
+          "id": "lesson-003",
+          "order": 3,
+          "videoUrl": "https://example.com/django-views.mp4"
+        },
+        {
+          "title": "Django REST Framework",
+          "description": "Building APIs with DRF",
+          "duration": 75,
+          "id": "lesson-004",
+          "order": 4,
+          "videoUrl": "https://example.com/django-rest.mp4"
+        }
+      ],
+      "category": "Backend Development",
+      "title": "Python Django Web Development",
+      "studentsCount": 0,
+      "createdAt": "Tue, 21 Oct 2025 13:51:53 GMT"
+    },
+    {
+      "description": "Build iOS and Android apps with React Native",
+      "duration": 200,
+      "thumbnail": "https://example.com/react-native-course.jpg",
+      "instructor": "Mobile Expert",
+      "price": 179.99,
+      "rating": 4.6,
+      "difficulty": "Intermediate",
+      "updatedAt": "Thu, 04 Sep 2025 05:22:43 GMT",
+      "isPublished": true,
+      "lessons": [
+        {
+          "title": "React Native Fundamentals",
+          "description": "Core concepts of React Native development",
+          "duration": 45,
+          "id": "lesson-001",
+          "videoUrl": "https://example.com/rn-fundamentals.mp4",
+          "order": 1
+        },
+        {
+          "title": "Navigation and Routing",
+          "description": "Implementing navigation in React Native apps",
+          "duration": 35,
+          "id": "lesson-002",
+          "videoUrl": "https://example.com/rn-navigation.mp4",
+          "order": 2
+        }
+      ],
+      "category": "Mobile Development",
+      "title": "React Native Cross-Platform Development",
+      "studentsCount": 0,
+      "createdAt": "Thu, 04 Sep 2025 05:22:43 GMT",
+      "id": "react-native-003"
+    },
+    {
+      "duration": 240,
+      "description": "Phát triển ứng dụng iOS với Swift và SwiftUI - iOS app development with Swift and SwiftUI",
+      "thumbnail": "https://example.com/swift-course.jpg",
+      "id": "swift-ios-006",
+      "instructor": "iOS Developer",
+      "price": 249.99,
+      "rating": 4.9,
+      "difficulty": "Intermediate",
+      "updatedAt": "Tue, 21 Oct 2025 13:51:53 GMT",
+      "isPublished": true,
+      "lessons": [
+        {
+          "title": "Swift Language Basics",
+          "description": "Introduction to Swift programming",
+          "duration": 50,
+          "id": "lesson-001",
+          "order": 1,
+          "videoUrl": "https://example.com/swift-basics.mp4"
+        },
+        {
+          "title": "UIKit Fundamentals",
+          "description": "Building UIs with UIKit",
+          "duration": 60,
+          "id": "lesson-002",
+          "order": 2,
+          "videoUrl": "https://example.com/uikit.mp4"
+        },
+        {
+          "title": "SwiftUI Modern Approach",
+          "description": "Declarative UI with SwiftUI",
+          "duration": 70,
+          "id": "lesson-003",
+          "order": 3,
+          "videoUrl": "https://example.com/swiftui.mp4"
+        },
+        {
+          "title": "Data Persistence",
+          "description": "Core Data and UserDefaults",
+          "duration": 60,
+          "id": "lesson-004",
+          "order": 4,
+          "videoUrl": "https://example.com/coredata.mp4"
+        }
+      ],
+      "category": "Mobile Development",
+      "title": "iOS Development with Swift",
+      "studentsCount": 0,
+      "createdAt": "Tue, 21 Oct 2025 13:51:53 GMT"
+    },
+    {
+      "duration": 160,
+      "description": "Xây dựng ứng dụng web với Vue.js - Build web applications with Vue.js",
+      "thumbnail": "https://example.com/vue-course.jpg",
+      "id": "vue-frontend-008",
+      "instructor": "Frontend Expert",
+      "price": 129.99,
+      "rating": 4.5,
+      "difficulty": "Beginner",
+      "updatedAt": "Tue, 21 Oct 2025 13:51:53 GMT",
+      "isPublished": true,
+      "lessons": [
+        {
+          "title": "Vue.js Introduction",
+          "description": "Getting started with Vue.js",
+          "duration": 35,
+          "id": "lesson-001",
+          "order": 1,
+          "videoUrl": "https://example.com/vue-intro.mp4"
+        },
+        {
+          "title": "Vue Components",
+          "description": "Building reusable components",
+          "duration": 45,
+          "id": "lesson-002",
+          "order": 2,
+          "videoUrl": "https://example.com/vue-components.mp4"
+        },
+        {
+          "title": "Vue Router",
+          "description": "Single page application routing",
+          "duration": 40,
+          "id": "lesson-003",
+          "order": 3,
+          "videoUrl": "https://example.com/vue-router.mp4"
+        },
+        {
+          "title": "Vuex State Management",
+          "description": "Managing application state",
+          "duration": 40,
+          "id": "lesson-004",
+          "order": 4,
+          "videoUrl": "https://example.com/vuex.mp4"
+        }
+      ],
+      "category": "Frontend Development",
+      "title": "Vue.js Frontend Development",
+      "studentsCount": 0,
+      "createdAt": "Tue, 21 Oct 2025 13:51:53 GMT"
+    }
+  ]
+}
