@@ -4,6 +4,7 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import '../../data/models/course.dart';
 import '../../data/repositories/course_repository.dart';
+import '../../../config/api_config.dart';
 
 class CourseDetailPage extends StatefulWidget {
   final Course course;
@@ -34,16 +35,21 @@ class _CourseDetailPageState extends State<CourseDetailPage> {
 
     try {
       final idToken = await user.getIdToken();
+      final url = ApiConfig.enrollmentCheckUrl(widget.course.id);
+      
+      print('=== ENROLLMENT CHECK DEBUG ===');
+      print('Check URL: $url');
+      
       final response = await http.get(
-        Uri.parse('http://127.0.0.1:5001/elearning-5ac35/us-central1/api/enrollments/check/${widget.course.id}'),
-        headers: {
-          'Authorization': 'Bearer $idToken',
-          'Content-Type': 'application/json',
-        },
-      );
+        Uri.parse(url),
+        headers: ApiConfig.getHeaders(token: idToken),
+      ).timeout(const Duration(seconds: 10));
 
+      print('Enrollment check response: ${response.statusCode}');
+      
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
+        print('✅ Enrolled: ${data['enrolled']}');
         if (mounted) {
           setState(() {
             isEnrolled = data['enrolled'] ?? false;
@@ -52,7 +58,7 @@ class _CourseDetailPageState extends State<CourseDetailPage> {
         }
       }
     } catch (e) {
-      print('Error checking enrollment status: $e');
+      print('❌ Error checking enrollment status: $e');
     }
   }
 
@@ -71,16 +77,18 @@ class _CourseDetailPageState extends State<CourseDetailPage> {
 
     try {
       final idToken = await user.getIdToken();
+      
+      print('=== ENROLLMENT ENROLL DEBUG ===');
+      print('Enroll URL: ${ApiConfig.enrollUrl}');
+      print('Course ID: ${widget.course.id}');
+      
       final response = await http.post(
-        Uri.parse('http://127.0.0.1:5001/elearning-5ac35/us-central1/api/enrollments/enroll'),
-        headers: {
-          'Authorization': 'Bearer $idToken',
-          'Content-Type': 'application/json',
-        },
+        Uri.parse(ApiConfig.enrollUrl),
+        headers: ApiConfig.getHeaders(token: idToken),
         body: json.encode({
           'course_id': widget.course.id,
         }),
-      );
+      ).timeout(const Duration(seconds: 10));
 
       final data = json.decode(response.body);
 

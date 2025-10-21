@@ -26,6 +26,15 @@ class ApiConfig {
   static String get coursesUrl => '$baseUrl/courses';
   static String courseByIdUrl(String id) => '$baseUrl/courses/$id';
   
+  // Auth/Profile endpoints
+  static String get profileUrl => '$baseUrl/auth/profile';
+  static String get registerUrl => '$baseUrl/auth/register';
+  
+  // Enrollment endpoints
+  static String get enrollmentsUrl => '$baseUrl/enrollments';
+  static String get enrollUrl => '$baseUrl/enrollments/enroll';
+  static String enrollmentCheckUrl(String courseId) => '$baseUrl/enrollments/check/$courseId';
+  
   // Helper method to get headers with authentication
   static Map<String, String> getHeaders({String? token}) {
     final headers = <String, String>{

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import '../../../config/api_config.dart';
 
 class EnrollmentsPage extends StatefulWidget {
   const EnrollmentsPage({super.key});
@@ -38,21 +39,26 @@ class _EnrollmentsPageState extends State<EnrollmentsPage> {
       });
 
       final idToken = await user.getIdToken();
+      
+      print('=== ENROLLMENTS DEBUG ===');
+      print('Enrollments URL: ${ApiConfig.enrollmentsUrl}');
+      
       final response = await http.get(
-        Uri.parse('http://127.0.0.1:5001/elearning-5ac35/us-central1/api/enrollments'),
-        headers: {
-          'Authorization': 'Bearer $idToken',
-          'Content-Type': 'application/json',
-        },
-      );
+        Uri.parse(ApiConfig.enrollmentsUrl),
+        headers: ApiConfig.getHeaders(token: idToken),
+      ).timeout(const Duration(seconds: 10));
 
+      print('Enrollments response status: ${response.statusCode}');
+      
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
+        print('✅ Enrollments loaded: ${data['count'] ?? 0}');
         setState(() {
           enrollments = List<Map<String, dynamic>>.from(data['enrollments'] ?? []);
           isLoading = false;
         });
       } else {
+        print('❌ Failed to load enrollments: ${response.statusCode} - ${response.body}');
         throw Exception('Failed to load enrollments: ${response.statusCode}');
       }
     } catch (e) {

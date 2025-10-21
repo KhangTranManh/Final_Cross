@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
+import '../../../config/api_config.dart';
 
 class RegisterPage extends StatefulWidget {
   const RegisterPage({super.key});
@@ -111,27 +112,29 @@ class _RegisterPageState extends State<RegisterPage> {
     try {
       final idToken = await user.getIdToken();
       
+      print('=== REGISTER DEBUG ===');
+      print('Register URL: ${ApiConfig.registerUrl}');
+      
       final response = await http.post(
-        Uri.parse('http://127.0.0.1:5001/elearning-5ac35/us-central1/api/auth/register'),
-        headers: {
-          'Authorization': 'Bearer $idToken',
-          'Content-Type': 'application/json',
-        },
+        Uri.parse(ApiConfig.registerUrl),
+        headers: ApiConfig.getHeaders(token: idToken),
         body: json.encode({
           'email': user.email,
           'display_name': nameCtrl.text.trim().isNotEmpty ? nameCtrl.text.trim() : null,
           'phone': phoneCtrl.text.trim().isNotEmpty ? phoneCtrl.text.trim() : null,
           'bio': null, // Can be added later in profile
         }),
-      );
+      ).timeout(const Duration(seconds: 10));
 
+      print('Register response: ${response.statusCode}');
+      
       if (response.statusCode == 201) {
         if (kDebugMode) {
-          print('User profile created successfully');
+          print('✅ User profile created successfully');
         }
       } else {
         if (kDebugMode) {
-          print('Failed to create user profile: ${response.statusCode}');
+          print('❌ Failed to create user profile: ${response.statusCode}');
           print('Response: ${response.body}');
         }
       }

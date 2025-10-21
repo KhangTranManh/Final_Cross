@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import '../../../config/api_config.dart';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
@@ -40,22 +41,27 @@ class _ProfilePageState extends State<ProfilePage> {
       // Get Firebase ID token
       final idToken = await user!.getIdToken();
       
+      print('=== PROFILE DEBUG ===');
+      print('Profile URL: ${ApiConfig.profileUrl}');
+      print('Has token: ${idToken != null}');
+      
       // Make API call to get profile
       final response = await http.get(
-        Uri.parse('http://127.0.0.1:5001/elearning-5ac35/us-central1/api/auth/profile'),
-        headers: {
-          'Authorization': 'Bearer $idToken',
-          'Content-Type': 'application/json',
-        },
-      );
+        Uri.parse(ApiConfig.profileUrl),
+        headers: ApiConfig.getHeaders(token: idToken),
+      ).timeout(const Duration(seconds: 10));
 
+      print('Profile response status: ${response.statusCode}');
+      
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
+        print('✅ Profile loaded successfully');
         setState(() {
           userData = data['user'];
           isLoading = false;
         });
       } else {
+        print('❌ Failed to load profile: ${response.statusCode} - ${response.body}');
         throw Exception('Failed to load profile: ${response.statusCode}');
       }
     } catch (e) {
@@ -74,13 +80,10 @@ class _ProfilePageState extends State<ProfilePage> {
       final idToken = await user!.getIdToken();
       
       final response = await http.put(
-        Uri.parse('http://127.0.0.1:5001/elearning-5ac35/us-central1/api/auth/profile'),
-        headers: {
-          'Authorization': 'Bearer $idToken',
-          'Content-Type': 'application/json',
-        },
+        Uri.parse(ApiConfig.profileUrl),
+        headers: ApiConfig.getHeaders(token: idToken),
         body: json.encode(updates),
-      );
+      ).timeout(const Duration(seconds: 10));
 
       if (response.statusCode == 200) {
         // Reload profile data
